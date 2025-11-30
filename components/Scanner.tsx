@@ -88,9 +88,9 @@ const Scanner: React.FC<ScannerProps> = ({ onScanComplete, onCancel, targetCurre
     <div className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4">
       <button
         onClick={onCancel}
-        className="absolute top-4 right-4 text-white hover:text-gray-300 p-2"
+        className="absolute top-4 right-4 text-white hover:bg-white/10 rounded-full p-2 transition-colors"
       >
-        <X size={32} />
+        <X size={28} />
       </button>
 
       <div className="w-full max-w-md bg-card rounded-2xl p-6 text-center shadow-2xl border border-gray-700">

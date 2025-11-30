@@ -33,9 +33,9 @@ const ReceiptDetail: React.FC<ReceiptDetailProps> = ({ receipt, onClose, onSave,
 
         {/* Header */}
         <div className="sticky top-0 z-10 bg-white/90 dark:bg-card/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center">
-          <h2 className="text-xl font-bold dark:text-white">Receipt Details</h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-            <X className="dark:text-white" size={24} />
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Receipt Details</h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
+            <X className="text-slate-900 dark:text-white" size={24} />
           </button>
         </div>
 
@@ -63,7 +63,7 @@ const ReceiptDetail: React.FC<ReceiptDetailProps> = ({ receipt, onClose, onSave,
                 type="text"
                 value={formData.merchantName}
                 onChange={(e) => handleChange('merchantName', e.target.value)}
-                className="w-full p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-lg font-bold dark:text-white focus:ring-2 focus:ring-primary outline-none"
+                className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-lg font-bold dark:text-white focus:ring-2 focus:ring-primary outline-none"
               />
             </div>
 
@@ -76,12 +76,12 @@ const ReceiptDetail: React.FC<ReceiptDetailProps> = ({ receipt, onClose, onSave,
                   type="number"
                   value={formData.amount}
                   onChange={(e) => handleChange('amount', parseFloat(e.target.value))}
-                  className="w-full p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-mono dark:text-white focus:ring-2 focus:ring-primary outline-none"
+                  className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-mono dark:text-white focus:ring-2 focus:ring-primary outline-none"
                 />
               </div>
               <div>
                 <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">In {targetCurrency}</label>
-                <div className="w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-900 border border-transparent font-mono text-gray-500 dark:text-gray-400">
+                <div className="w-full p-3 rounded-xl bg-gray-100 dark:bg-gray-900 border border-transparent font-mono text-gray-500 dark:text-gray-400">
                   {formData.convertedAmount?.toFixed(2)}
                 </div>
               </div>
@@ -96,7 +96,7 @@ const ReceiptDetail: React.FC<ReceiptDetailProps> = ({ receipt, onClose, onSave,
                   type="number"
                   value={formData.vat}
                   onChange={(e) => handleChange('vat', parseFloat(e.target.value))}
-                  className="w-full p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-mono dark:text-white focus:ring-2 focus:ring-primary outline-none"
+                  className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-mono dark:text-white focus:ring-2 focus:ring-primary outline-none"
                 />
               </div>
               <div>
@@ -113,7 +113,7 @@ const ReceiptDetail: React.FC<ReceiptDetailProps> = ({ receipt, onClose, onSave,
                   type="date"
                   value={formData.date}
                   onChange={(e) => handleChange('date', e.target.value)}
-                  className="w-full p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-primary outline-none"
+                  className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-primary outline-none"
                 />
               </div>
               <div>
@@ -122,7 +122,7 @@ const ReceiptDetail: React.FC<ReceiptDetailProps> = ({ receipt, onClose, onSave,
                   type="time"
                   value={formData.time}
                   onChange={(e) => handleChange('time', e.target.value)}
-                  className="w-full p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-primary outline-none"
+                  className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-primary outline-none"
                 />
               </div>
             </div>
@@ -134,7 +134,7 @@ const ReceiptDetail: React.FC<ReceiptDetailProps> = ({ receipt, onClose, onSave,
               <select
                 value={formData.category}
                 onChange={(e) => handleChange('category', e.target.value)}
-                className="w-full p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-primary outline-none appearance-none"
+                className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-primary outline-none appearance-none"
               >
                 {Object.values(ExpenseCategory).map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
@@ -146,16 +146,16 @@ const ReceiptDetail: React.FC<ReceiptDetailProps> = ({ receipt, onClose, onSave,
               <label className="block text-xs font-semibold uppercase text-gray-500 mb-1 flex items-center gap-1">
                 <Briefcase size={12} /> Expense Type
               </label>
-              <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+              <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
                 <button
                   onClick={() => handleChange('type', ExpenseType.Business)}
-                  className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${formData.type === ExpenseType.Business ? 'bg-white dark:bg-primary shadow text-primary dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${formData.type === ExpenseType.Business ? 'bg-white dark:bg-primary shadow text-primary dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
                 >
                   Business
                 </button>
                 <button
                   onClick={() => handleChange('type', ExpenseType.Private)}
-                  className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${formData.type === ExpenseType.Private ? 'bg-white dark:bg-secondary shadow text-secondary dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${formData.type === ExpenseType.Private ? 'bg-white dark:bg-secondary shadow text-secondary dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
                 >
                   Private
                 </button>
@@ -170,7 +170,7 @@ const ReceiptDetail: React.FC<ReceiptDetailProps> = ({ receipt, onClose, onSave,
                 value={formData.merchantAddress}
                 onChange={(e) => handleChange('merchantAddress', e.target.value)}
                 rows={2}
-                className="w-full p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-primary outline-none resize-none"
+                className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-primary outline-none resize-none"
               />
             </div>
 

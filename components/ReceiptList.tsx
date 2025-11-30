@@ -154,15 +154,15 @@ const ReceiptList: React.FC<ReceiptListProps> = ({ receipts, onBack, onSelectRec
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                     <button onClick={onBack} className="p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
-                        <ChevronLeft className="text-slate-900 dark:text-white" />
+                        <ChevronLeft className="text-slate-900 dark:text-white" size={28} />
                     </button>
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Analytics</h2>
+                    <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Analytics</h2>
                 </div>
                 <button
                     onClick={() => setShowChart(!showChart)}
-                    className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-slate-600 dark:text-gray-300"
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-slate-600 dark:text-gray-300 transition-colors"
                 >
-                    {showChart ? <ListIcon size={20} /> : <BarChart3 size={20} />}
+                    {showChart ? <ListIcon size={24} /> : <BarChart3 size={24} />}
                 </button>
             </div>
 
@@ -179,8 +179,8 @@ const ReceiptList: React.FC<ReceiptListProps> = ({ receipts, onBack, onSelectRec
                                     key={range}
                                     onClick={() => setTimeRange(range)}
                                     className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${timeRange === range
-                                            ? 'bg-white dark:bg-gray-700 text-slate-900 dark:text-white shadow-sm'
-                                            : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                                        ? 'bg-white dark:bg-gray-700 text-slate-900 dark:text-white shadow-sm'
+                                        : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                                         }`}
                                 >
                                     {range}

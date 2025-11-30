@@ -52,12 +52,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ currentCurrency, currentN
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
             <div className="bg-white dark:bg-card w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
                 <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
                         {isPrompt ? "Welcome! Please setup your profile" : "Settings"}
                     </h2>
                     {!isPrompt && (
                         <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
-                            <X size={20} className="text-gray-500" />
+                            <X size={24} className="text-slate-900 dark:text-white" />
                         </button>
                     )}
                 </div>
@@ -111,7 +111,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ currentCurrency, currentN
                     {!isPrompt && (
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 text-sm font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                            className="px-4 py-2 text-sm font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-colors"
                         >
                             Cancel
                         </button>
@@ -119,9 +119,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ currentCurrency, currentN
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="px-4 py-2 text-sm font-bold bg-primary text-white rounded-lg shadow-lg shadow-primary/25 hover:opacity-90 transition-opacity flex items-center gap-2"
+                        className="px-6 py-2 text-sm font-bold bg-gradient-to-r from-primary to-secondary text-white rounded-xl shadow-lg shadow-primary/25 hover:opacity-90 transition-opacity flex items-center gap-2"
                     >
-                        {isSaving ? 'Saving...' : <><Save size={16} /> {isPrompt ? "Get Started" : "Save Changes"}</>}
+                        {isSaving ? 'Saving...' : <><Save size={18} /> {isPrompt ? "Get Started" : "Save Changes"}</>}
                     </button>
                 </div>
             </div>
