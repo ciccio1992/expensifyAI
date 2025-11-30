@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Dashboard from './components/Dashboard';
 import Scanner from './components/Scanner';
@@ -7,7 +6,7 @@ import ReceiptDetail from './components/ReceiptDetail';
 import MapView from './components/MapView';
 import Auth from './components/Auth';
 import { ReceiptData } from './types';
-import { Moon, Sun, Loader2, WifiOff, Database, Save as SaveIcon, AlertTriangle, Copy, Terminal, LogOut } from 'lucide-react';
+import { Moon, Sun, Loader2, LogOut, Database, Save as SaveIcon, AlertTriangle, Copy, Terminal } from 'lucide-react';
 import { 
   supabase, 
   mapReceiptFromDB, 
@@ -108,11 +107,8 @@ const App: React.FC = () => {
     } catch (err: any) {
       console.error("Fetch Error:", err);
       // If table doesn't exist at all, we might need migration too
-      if (err?.code === '42P01') { // undefined_table
+      if (err?.code === '42P01' || err?.code === 'PGRST204') { // undefined_table
         setMigrationNeeded(true);
-      } else if (err?.message !== "Fetch Failed") {
-        // Only show connection error if it's not a simple empty list or auth issue
-         // setConnectionError(true); 
       }
     } finally {
       setIsLoading(false);
