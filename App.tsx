@@ -24,7 +24,7 @@ const App: React.FC = () => {
   const [receipts, setReceipts] = useState<ReceiptData[]>([]);
   const [view, setView] = useState<'dashboard' | 'list' | 'map'>('dashboard');
   const [isScanning, setIsScanning] = useState(false);
-  const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null);
+  const [selectedReceiptId, setSelectedReceiptId] = useState<string | null>(null);
   const [darkMode, setDarkMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
@@ -175,6 +175,11 @@ const App: React.FC = () => {
     });
   }, [receipts, targetCurrency, exchangeRates]);
 
+  // Derive Selected Receipt from Display Receipts (so it updates when currency changes)
+  const selectedReceipt = React.useMemo(() => {
+    return displayReceipts.find(r => r.id === selectedReceiptId) || null;
+  }, [displayReceipts, selectedReceiptId]);
+
   // Apply Theme
   useEffect(() => {
     if (darkMode) {
@@ -214,7 +219,11 @@ const App: React.FC = () => {
     // 2. Optimistic UI update
     setReceipts(prev => [processedReceipt, ...prev]);
     setIsScanning(false);
-    setSelectedReceipt(processedReceipt); // Open detail view with corrected values
+    // 2. Optimistic UI update
+    setReceipts(prev => [processedReceipt, ...prev]);
+    setIsScanning(false);
+    setSelectedReceiptId(processedReceipt.id); // Open detail view with corrected values
+    setUploadingState(true);
     setUploadingState(true);
 
     try {
@@ -266,7 +275,7 @@ const App: React.FC = () => {
 
     // Optimistic Update
     setReceipts(prev => prev.map(r => r.id === updated.id ? updated : r));
-    setSelectedReceipt(null);
+    setSelectedReceiptId(null);
 
     try {
       const dbPayload = mapReceiptToDB(updated, session.user.id);
@@ -286,7 +295,9 @@ const App: React.FC = () => {
     if (window.confirm("Are you sure you want to delete this receipt?")) {
       // Optimistic Update
       setReceipts(prev => prev.filter(r => r.id !== id));
-      setSelectedReceipt(null);
+      // Optimistic Update
+      setReceipts(prev => prev.filter(r => r.id !== id));
+      setSelectedReceiptId(null);
 
       try {
         const { error } = await supabase.from('receipts').delete().eq('id', id);
@@ -578,7 +589,7 @@ create policy "Users can manage own settings" on user_settings for all using (au
             onAdd={() => setIsScanning(true)}
             onViewAll={() => setView('list')}
             onViewMap={() => setView('map')}
-            onSelectReceipt={setSelectedReceipt}
+            onSelectReceipt={(r) => setSelectedReceiptId(r.id)}
             targetCurrency={targetCurrency}
           />
         )}
@@ -587,7 +598,7 @@ create policy "Users can manage own settings" on user_settings for all using (au
           <ReceiptList
             receipts={displayReceipts}
             onBack={() => setView('dashboard')}
-            onSelectReceipt={setSelectedReceipt}
+            onSelectReceipt={(r) => setSelectedReceiptId(r.id)}
             targetCurrency={targetCurrency}
           />
         )}
@@ -598,7 +609,7 @@ create policy "Users can manage own settings" on user_settings for all using (au
         <MapView
           receipts={displayReceipts}
           onClose={() => setView('dashboard')}
-          onSelectReceipt={setSelectedReceipt}
+          onSelectReceipt={(r) => setSelectedReceiptId(r.id)}
           targetCurrency={targetCurrency}
         />
       )}
@@ -615,7 +626,7 @@ create policy "Users can manage own settings" on user_settings for all using (au
       {selectedReceipt && (
         <ReceiptDetail
           receipt={selectedReceipt}
-          onClose={() => setSelectedReceipt(null)}
+          onClose={() => setSelectedReceiptId(null)}
           onSave={handleUpdateReceipt}
           onDelete={handleDeleteReceipt}
           targetCurrency={targetCurrency}

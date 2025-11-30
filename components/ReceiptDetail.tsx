@@ -13,6 +13,10 @@ interface ReceiptDetailProps {
 const ReceiptDetail: React.FC<ReceiptDetailProps> = ({ receipt, onClose, onSave, onDelete, targetCurrency }) => {
   const [formData, setFormData] = useState<ReceiptData>(receipt);
 
+  React.useEffect(() => {
+    setFormData(receipt);
+  }, [receipt]);
+
   const handleChange = (field: keyof ReceiptData, value: any) => {
     setFormData(prev => {
       const updated = { ...prev, [field]: value };
