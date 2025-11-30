@@ -219,11 +219,7 @@ const App: React.FC = () => {
     // 2. Optimistic UI update
     setReceipts(prev => [processedReceipt, ...prev]);
     setIsScanning(false);
-    // 2. Optimistic UI update
-    setReceipts(prev => [processedReceipt, ...prev]);
-    setIsScanning(false);
     setSelectedReceiptId(processedReceipt.id); // Open detail view with corrected values
-    setUploadingState(true);
     setUploadingState(true);
 
     try {
