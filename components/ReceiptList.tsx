@@ -189,7 +189,7 @@ const ReceiptList: React.FC<ReceiptListProps> = ({ receipts, onBack, onSelectRec
                </div>
            </div>
 
-           <div className="w-full" style={{ height: 300 }}>
+           <div className="w-full" style={{ height: 300, minWidth: 0 }}>
              <ResponsiveContainer width="100%" height="100%">
                <BarChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#374151" opacity={0.2} />

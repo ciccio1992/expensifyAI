@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { ReceiptData, ExpenseType } from '../types';
 import { Plus, ArrowRight, TrendingUp, Briefcase, User, Map } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 
 interface DashboardProps {
   receipts: ReceiptData[];
@@ -89,30 +90,28 @@ const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onViewAll, onVie
                <h3 className="text-lg font-bold dark:text-white mb-1">Distribution</h3>
                <p className="text-sm text-gray-500 line-clamp-2">Business vs Private spending breakdown.</p>
             </div>
-            {/* Added shrink-0 and min-width/height to ensure Recharts can measure dimensions properly */}
-            <div className="w-32 h-32 flex-shrink-0 min-w-[120px] min-h-[120px]">
-               <ResponsiveContainer width="100%" height="100%">
-                 <PieChart>
-                   <Pie
-                     data={chartData}
-                     cx="50%"
-                     cy="50%"
-                     innerRadius={30}
-                     outerRadius={50}
-                     paddingAngle={5}
-                     dataKey="value"
-                   >
-                     {chartData.map((entry, index) => (
-                       <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
-                     ))}
-                   </Pie>
-                   <Tooltip 
-                      contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
-                      itemStyle={{ color: '#fff' }}
-                      formatter={(value: number) => `€${value.toFixed(2)}`}
-                   />
-                 </PieChart>
-               </ResponsiveContainer>
+            {/* Fixed dimensions to prevent Recharts measurement errors */}
+            <div className="flex-shrink-0">
+               <PieChart width={128} height={128}>
+                 <Pie
+                   data={chartData}
+                   cx="50%"
+                   cy="50%"
+                   innerRadius={30}
+                   outerRadius={50}
+                   paddingAngle={5}
+                   dataKey="value"
+                 >
+                   {chartData.map((entry, index) => (
+                     <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                   ))}
+                 </Pie>
+                 <Tooltip 
+                    contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
+                    itemStyle={{ color: '#fff' }}
+                    formatter={(value: number) => `€${value.toFixed(2)}`}
+                 />
+               </PieChart>
             </div>
         </div>
       )}

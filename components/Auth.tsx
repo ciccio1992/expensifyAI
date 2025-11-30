@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { supabase } from '../services/supabaseClient';
-import { Mail, Lock, Loader2, LogIn, UserPlus, AlertCircle } from 'lucide-react';
+import { Mail, Lock, Loader2, LogIn, UserPlus, AlertCircle, HelpCircle } from 'lucide-react';
 
 const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -47,6 +47,10 @@ const Auth: React.FC = () => {
             provider: 'google',
             options: {
                 redirectTo: window.location.origin, // Returns user to this app after Google logic
+                queryParams: {
+                  access_type: 'offline',
+                  prompt: 'consent select_account', // Forces account picker to fix loop/403 issues
+                },
             }
         });
         if (error) throw error;
@@ -73,9 +77,26 @@ const Auth: React.FC = () => {
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-start gap-3 text-sm text-red-600 dark:text-red-300">
-            <AlertCircle size={18} className="mt-0.5 flex-shrink-0" />
-            <p>{error}</p>
+          <div className="mb-6 animate-fade-in">
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-start gap-3 text-sm text-red-600 dark:text-red-300">
+                <AlertCircle size={18} className="mt-0.5 flex-shrink-0" />
+                <p className="break-words">{error}</p>
+            </div>
+            
+            {/* Contextual Help for Google Errors */}
+            {error.includes('google') || error.includes('403') ? (
+                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl text-xs text-blue-800 dark:text-blue-200">
+                    <div className="flex items-center gap-2 font-bold mb-2">
+                        <HelpCircle size={14} />
+                        <span>Google 403 Error Troubleshooting</span>
+                    </div>
+                    <ul className="list-disc pl-4 space-y-1 opacity-90">
+                        <li>Go to <strong>Google Cloud Console &gt; Credentials</strong>.</li>
+                        <li>Check "Authorized redirect URIs". It <strong>must</strong> match exactly: <br/> <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">{`https://<project-id>.supabase.co/auth/v1/callback`}</code></li>
+                        <li>If testing, ensure your email is added to "Test Users" in OAuth Consent Screen.</li>
+                    </ul>
+                </div>
+            ) : null}
           </div>
         )}
 
