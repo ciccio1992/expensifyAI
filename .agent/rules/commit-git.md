@@ -1,6 +1,5 @@
 ---
 trigger: always_on
-glob:
-description:
 ---
 
+Always remember to commit your changes to GIT whenever available on the selected branch

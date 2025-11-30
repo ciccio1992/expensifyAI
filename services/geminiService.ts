@@ -2,7 +2,12 @@ import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { ExpenseCategory, ExpenseType } from '../types';
 
 // Initialize Gemini Client
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || "");
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+if (!apiKey) {
+  console.error("Missing Gemini API Key. Please set VITE_GEMINI_API_KEY in your .env file.");
+}
+const genAI = new GoogleGenerativeAI(apiKey || "DUMMY_KEY");
+
 
 // Define the response schema strictly
 const getReceiptSchema = (targetCurrency: string) => ({
@@ -35,6 +40,10 @@ const getReceiptSchema = (targetCurrency: string) => ({
 export const analyzeReceiptImage = async (base64Image: string, targetCurrency: string = 'EUR'): Promise<any> => {
   // Remove data URL prefix if present for the API call
   const cleanBase64 = base64Image.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, "");
+
+  if (!apiKey) {
+    throw new Error("Missing Gemini API Key. Please configure it in your settings or .env file.");
+  }
 
   try {
     const model = genAI.getGenerativeModel({

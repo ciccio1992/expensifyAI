@@ -78,7 +78,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanComplete, onCancel, targetCurre
       onScanComplete(newReceipt);
     } catch (err) {
       console.error(err);
-      setError("Failed to analyze receipt. Please try again with a clearer image.");
+      setError(err instanceof Error ? err.message : "Failed to analyze receipt. Please try again with a clearer image.");
     } finally {
       setIsProcessing(false);
     }
