@@ -294,10 +294,12 @@ insert into storage.buckets (id, name, public)
 values ('receipts', 'receipts', false) 
 on conflict do nothing;
 
+drop policy if exists "Authenticated users can upload receipts" on storage.objects;
 create policy "Authenticated users can upload receipts"
 on storage.objects for insert to authenticated
 with check ( bucket_id = 'receipts' );
 
+drop policy if exists "Users can view own receipts" on storage.objects;
 create policy "Users can view own receipts"
 on storage.objects for select to authenticated
 using ( bucket_id = 'receipts' and auth.uid() = owner );
@@ -438,10 +440,12 @@ insert into storage.buckets (id, name, public)
 values ('receipts', 'receipts', false)
 on conflict do nothing;
 
+drop policy if exists "Authenticated users can upload receipts" on storage.objects;
 create policy "Authenticated users can upload receipts"
 on storage.objects for insert to authenticated
 with check ( bucket_id = 'receipts' );
 
+drop policy if exists "Users can view own receipts" on storage.objects;
 create policy "Users can view own receipts"
 on storage.objects for select to authenticated
 using ( bucket_id = 'receipts' and auth.uid() = owner );
@@ -540,6 +544,7 @@ create policy "Users can manage own settings" on user_settings for all using (au
           receipts={receipts}
           onClose={() => setView('dashboard')}
           onSelectReceipt={setSelectedReceipt}
+          targetCurrency={targetCurrency}
         />
       )}
 

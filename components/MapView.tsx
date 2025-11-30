@@ -7,9 +7,10 @@ interface MapViewProps {
   receipts: ReceiptData[];
   onClose: () => void;
   onSelectReceipt: (receipt: ReceiptData) => void;
+  targetCurrency: string;
 }
 
-const MapView: React.FC<MapViewProps> = ({ receipts, onClose, onSelectReceipt }) => {
+const MapView: React.FC<MapViewProps> = ({ receipts, onClose, onSelectReceipt, targetCurrency }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const [filter, setFilter] = useState<'week' | 'month' | 'year' | 'all'>('all');
@@ -100,7 +101,7 @@ const MapView: React.FC<MapViewProps> = ({ receipts, onClose, onSelectReceipt })
                     <span class="text-xs font-medium px-2 py-1 rounded-full ${r.type === 'Business' ? 'bg-indigo-50 text-indigo-600' : 'bg-purple-50 text-purple-600'}">
                         ${r.type}
                     </span>
-                    <span class="font-bold text-lg text-slate-900">€${r.amountInEur.toFixed(2)}</span>
+                    <span class="font-bold text-lg text-slate-900">${targetCurrency} ${r.convertedAmount?.toFixed(2)}</span>
                 </div>
                 <div class="mt-2 text-center text-xs text-primary font-bold uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-opacity">
                     Click to view details
