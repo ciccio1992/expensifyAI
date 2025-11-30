@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import { ReceiptData } from '../types';
 
@@ -21,16 +20,18 @@ const getSupabaseConfig = () => {
     }
   }
 
-  // 3. Fallback to placeholders (will cause connection error, triggering the UI setup screen)
+  // 3. Fallback to safe placeholders
+  // This ensures the client initializes but fails connection gracefully if no keys are provided,
+  // prompting the App to show the manual setup screen.
   return { 
-    url: 'https://jfovetspnxevnaafqukn.supabase.co', 
-    key: 'sb_publishable_7ug_NqKBXIunK03JLcCMIg_diO2AqFd' 
+    url: 'https://placeholder.supabase.co', 
+    key: 'placeholder-key' 
   };
 };
 
 const config = getSupabaseConfig();
 
-// DEBUG: Log the configured URL to ensure it matches the user's project
+// DEBUG: Log the configured URL (masked) to ensure it matches the user's project
 console.log("Initializing Supabase Client with URL:", config.url);
 
 export const supabase = createClient(config.url, config.key);
