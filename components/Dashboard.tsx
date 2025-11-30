@@ -10,17 +10,18 @@ interface DashboardProps {
   onViewAll: () => void;
   onViewMap: () => void;
   onSelectReceipt: (r: ReceiptData) => void;
+  targetCurrency: string;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onViewAll, onViewMap, onSelectReceipt }) => {
+const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onViewAll, onViewMap, onSelectReceipt, targetCurrency }) => {
   // Calculate Totals
   const totalBusiness = receipts
     .filter(r => r.type === ExpenseType.Business)
-    .reduce((sum, r) => sum + r.amountInEur, 0);
+    .reduce((sum, r) => sum + (r.convertedAmount || 0), 0);
 
   const totalPrivate = receipts
     .filter(r => r.type === ExpenseType.Private)
-    .reduce((sum, r) => sum + r.amountInEur, 0);
+    .reduce((sum, r) => sum + (r.convertedAmount || 0), 0);
 
   const totalAll = totalBusiness + totalPrivate;
 
@@ -35,84 +36,84 @@ const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onViewAll, onVie
 
   return (
     <div className="space-y-6 pb-20">
-      
+
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-white dark:bg-card p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 relative overflow-hidden">
-           <div className="absolute top-0 right-0 p-4 opacity-10">
-             <Briefcase size={64} className="text-primary" />
-           </div>
-           <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Business Expenses</p>
-           <h3 className="text-3xl font-bold text-slate-900 dark:text-white mt-2">€{totalBusiness.toLocaleString('en-EU', { minimumFractionDigits: 2 })}</h3>
-           <div className="mt-4 h-1 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-             <div 
-                className="h-full bg-primary" 
-                style={{ width: `${totalAll > 0 ? (totalBusiness / totalAll) * 100 : 0}%` }}
-             ></div>
-           </div>
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <Briefcase size={64} className="text-primary" />
+          </div>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Business Expenses</p>
+          <h3 className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{targetCurrency} {totalBusiness.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
+          <div className="mt-4 h-1 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary"
+              style={{ width: `${totalAll > 0 ? (totalBusiness / totalAll) * 100 : 0}%` }}
+            ></div>
+          </div>
         </div>
 
         <div className="bg-white dark:bg-card p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 relative overflow-hidden">
-           <div className="absolute top-0 right-0 p-4 opacity-10">
-             <User size={64} className="text-secondary" />
-           </div>
-           <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Private Expenses</p>
-           <h3 className="text-3xl font-bold text-slate-900 dark:text-white mt-2">€{totalPrivate.toLocaleString('en-EU', { minimumFractionDigits: 2 })}</h3>
-           <div className="mt-4 h-1 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-             <div 
-                className="h-full bg-secondary" 
-                style={{ width: `${totalAll > 0 ? (totalPrivate / totalAll) * 100 : 0}%` }}
-             ></div>
-           </div>
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <User size={64} className="text-secondary" />
+          </div>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Private Expenses</p>
+          <h3 className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{targetCurrency} {totalPrivate.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
+          <div className="mt-4 h-1 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-secondary"
+              style={{ width: `${totalAll > 0 ? (totalPrivate / totalAll) * 100 : 0}%` }}
+            ></div>
+          </div>
         </div>
       </div>
 
       {/* Actions Bar */}
       <div className="flex gap-2">
-         <button 
-           onClick={onViewMap}
-           className="flex-1 flex items-center justify-center gap-2 p-3 bg-white dark:bg-card border border-gray-200 dark:border-gray-700 rounded-xl font-medium text-slate-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-         >
-           <Map size={18} className="text-blue-500" /> View Map
-         </button>
-         <button 
-           onClick={onViewAll}
-           className="flex-1 flex items-center justify-center gap-2 p-3 bg-white dark:bg-card border border-gray-200 dark:border-gray-700 rounded-xl font-medium text-slate-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-         >
-           <TrendingUp size={18} className="text-green-500" /> Analytics
-         </button>
+        <button
+          onClick={onViewMap}
+          className="flex-1 flex items-center justify-center gap-2 p-3 bg-white dark:bg-card border border-gray-200 dark:border-gray-700 rounded-xl font-medium text-slate-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        >
+          <Map size={18} className="text-blue-500" /> View Map
+        </button>
+        <button
+          onClick={onViewAll}
+          className="flex-1 flex items-center justify-center gap-2 p-3 bg-white dark:bg-card border border-gray-200 dark:border-gray-700 rounded-xl font-medium text-slate-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        >
+          <TrendingUp size={18} className="text-green-500" /> Analytics
+        </button>
       </div>
 
       {/* Chart Section - Only if data exists */}
       {totalAll > 0 && (
         <div className="bg-white dark:bg-card p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4">
-            <div className="min-w-0 flex-1">
-               <h3 className="text-lg font-bold dark:text-white mb-1">Distribution</h3>
-               <p className="text-sm text-gray-500 line-clamp-2">Business vs Private spending breakdown.</p>
-            </div>
-            {/* Fixed dimensions to prevent Recharts measurement errors */}
-            <div className="flex-shrink-0">
-               <PieChart width={128} height={128}>
-                 <Pie
-                   data={chartData}
-                   cx="50%"
-                   cy="50%"
-                   innerRadius={30}
-                   outerRadius={50}
-                   paddingAngle={5}
-                   dataKey="value"
-                 >
-                   {chartData.map((entry, index) => (
-                     <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
-                   ))}
-                 </Pie>
-                 <Tooltip 
-                    contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
-                    itemStyle={{ color: '#fff' }}
-                    formatter={(value: number) => `€${value.toFixed(2)}`}
-                 />
-               </PieChart>
-            </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-lg font-bold dark:text-white mb-1">Distribution</h3>
+            <p className="text-sm text-gray-500 line-clamp-2">Business vs Private spending breakdown.</p>
+          </div>
+          {/* Fixed dimensions to prevent Recharts measurement errors */}
+          <div className="flex-shrink-0">
+            <PieChart width={128} height={128}>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                innerRadius={30}
+                outerRadius={50}
+                paddingAngle={5}
+                dataKey="value"
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
+                itemStyle={{ color: '#fff' }}
+                formatter={(value: number) => `${targetCurrency} ${value.toFixed(2)}`}
+              />
+            </PieChart>
+          </div>
         </div>
       )}
 
@@ -120,7 +121,7 @@ const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onViewAll, onVie
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">Recent Receipts</h3>
-          <button 
+          <button
             onClick={onViewAll}
             className="text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-1"
           >
@@ -131,7 +132,7 @@ const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onViewAll, onVie
         {recentReceipts.length === 0 ? (
           <div className="text-center py-10 bg-white dark:bg-card rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
-                <TrendingUp className="text-gray-400" />
+              <TrendingUp className="text-gray-400" />
             </div>
             <p className="text-gray-500 dark:text-gray-400">No receipts yet.</p>
             <p className="text-sm text-gray-400 dark:text-gray-600">Start by scanning a new receipt.</p>
@@ -139,7 +140,7 @@ const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onViewAll, onVie
         ) : (
           <div className="space-y-3">
             {recentReceipts.map(receipt => (
-              <div 
+              <div
                 key={receipt.id}
                 onClick={() => onSelectReceipt(receipt)}
                 className="group bg-white dark:bg-card p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center justify-between"
@@ -154,8 +155,8 @@ const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onViewAll, onVie
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-slate-900 dark:text-white">€{receipt.amountInEur.toFixed(2)}</p>
-                  {receipt.currency !== 'EUR' && (
+                  <p className="font-bold text-slate-900 dark:text-white">{targetCurrency} {receipt.convertedAmount?.toFixed(2)}</p>
+                  {receipt.currency !== targetCurrency && (
                     <p className="text-xs text-gray-400">{receipt.currency} {receipt.amount}</p>
                   )}
                 </div>

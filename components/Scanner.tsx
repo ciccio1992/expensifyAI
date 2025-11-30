@@ -8,12 +8,13 @@ import { v4 as uuidv4 } from 'uuid';
 interface ScannerProps {
   onScanComplete: (receipt: ReceiptData) => void;
   onCancel: () => void;
+  targetCurrency: string;
 }
 
-const Scanner: React.FC<ScannerProps> = ({ onScanComplete, onCancel }) => {
+const Scanner: React.FC<ScannerProps> = ({ onScanComplete, onCancel, targetCurrency }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [deviceLocation, setDeviceLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [deviceLocation, setDeviceLocation] = useState<{ lat: number, lng: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -45,7 +46,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanComplete, onCancel }) => {
       const resizedBase64 = await resizeImage(file, 1024);
 
       // 2. Call Gemini API
-      const extractedData = await analyzeReceiptImage(resizedBase64);
+      const extractedData = await analyzeReceiptImage(resizedBase64, targetCurrency);
 
       // 3. Determine Location
       const finalLat = extractedData.latitude || deviceLocation?.lat;
@@ -64,8 +65,9 @@ const Scanner: React.FC<ScannerProps> = ({ onScanComplete, onCancel }) => {
         amount: extractedData.amount || 0,
         currency: extractedData.currency || "EUR",
         vat: extractedData.vat || 0,
-        exchangeRateToEur: extractedData.exchangeRateToEur || 1,
-        amountInEur: (extractedData.amount || 0) * (extractedData.exchangeRateToEur || 1),
+        exchangeRate: extractedData.exchangeRate || 1,
+        convertedAmount: (extractedData.amount || 0) * (extractedData.exchangeRate || 1),
+        targetCurrency: targetCurrency,
         category: extractedData.category as ExpenseCategory || ExpenseCategory.Other,
         type: extractedData.type as ExpenseType || ExpenseType.Business,
         createdAt: Date.now(),
@@ -84,7 +86,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanComplete, onCancel }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4">
-      <button 
+      <button
         onClick={onCancel}
         className="absolute top-4 right-4 text-white hover:text-gray-300 p-2"
       >
@@ -93,7 +95,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanComplete, onCancel }) => {
 
       <div className="w-full max-w-md bg-card rounded-2xl p-6 text-center shadow-2xl border border-gray-700">
         <h2 className="text-2xl font-bold text-white mb-6">Add New Receipt</h2>
-        
+
         {error && (
           <div className="mb-4 p-3 bg-red-500/20 text-red-200 rounded-lg text-sm">
             {error}
@@ -118,10 +120,10 @@ const Scanner: React.FC<ScannerProps> = ({ onScanComplete, onCancel }) => {
               <p className="text-lg font-medium text-white">Capture or Upload</p>
               <p className="text-sm text-gray-500 mt-2">Supports JPG, PNG (Max 5MB)</p>
             </button>
-            
+
             <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
-                <MapPin size={12} className={deviceLocation ? "text-green-500" : "text-gray-600"} />
-                {deviceLocation ? "Device Location Active" : "Location Service Inactive"}
+              <MapPin size={12} className={deviceLocation ? "text-green-500" : "text-gray-600"} />
+              {deviceLocation ? "Device Location Active" : "Location Service Inactive"}
             </div>
 
             <input

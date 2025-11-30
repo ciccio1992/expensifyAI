@@ -25,8 +25,9 @@ export interface ReceiptData {
   amount: number;
   currency: string;
   vat: number; // Value Added Tax amount
-  exchangeRateToEur: number;
-  amountInEur: number;
+  exchangeRate: number;
+  convertedAmount: number;
+  targetCurrency: string;
   category: ExpenseCategory;
   type: ExpenseType;
   imageBase64: string; // Used for display (either local preview or signed URL)

@@ -7,16 +7,17 @@ interface ReceiptDetailProps {
   onClose: () => void;
   onSave: (updated: ReceiptData) => void;
   onDelete: (id: string) => void;
+  targetCurrency: string;
 }
 
-const ReceiptDetail: React.FC<ReceiptDetailProps> = ({ receipt, onClose, onSave, onDelete }) => {
+const ReceiptDetail: React.FC<ReceiptDetailProps> = ({ receipt, onClose, onSave, onDelete, targetCurrency }) => {
   const [formData, setFormData] = useState<ReceiptData>(receipt);
 
   const handleChange = (field: keyof ReceiptData, value: any) => {
     setFormData(prev => {
       const updated = { ...prev, [field]: value };
-      if (field === 'amount' || field === 'exchangeRateToEur') {
-        updated.amountInEur = updated.amount * updated.exchangeRateToEur;
+      if (field === 'amount' || field === 'exchangeRate') {
+        updated.convertedAmount = updated.amount * updated.exchangeRate;
       }
       return updated;
     });
@@ -25,7 +26,7 @@ const ReceiptDetail: React.FC<ReceiptDetailProps> = ({ receipt, onClose, onSave,
   return (
     <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm flex justify-end">
       <div className="w-full max-w-lg bg-white dark:bg-card h-full shadow-2xl overflow-y-auto animate-slide-in-right">
-        
+
         {/* Header */}
         <div className="sticky top-0 z-10 bg-white/90 dark:bg-card/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center">
           <h2 className="text-xl font-bold dark:text-white">Receipt Details</h2>
@@ -35,23 +36,23 @@ const ReceiptDetail: React.FC<ReceiptDetailProps> = ({ receipt, onClose, onSave,
         </div>
 
         <div className="p-6 space-y-6">
-          
+
           {/* Image */}
           <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 shadow-inner min-h-[200px] flex items-center justify-center">
             {formData.imageBase64 ? (
-                <img 
-                src={formData.imageBase64} 
-                alt="Receipt" 
+              <img
+                src={formData.imageBase64}
+                alt="Receipt"
                 className="w-full h-auto object-contain max-h-96"
-                />
+              />
             ) : (
-                <p className="text-gray-400">Image loading...</p>
+              <p className="text-gray-400">Image loading...</p>
             )}
           </div>
 
           {/* Form */}
           <div className="space-y-4">
-            
+
             <div>
               <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Merchant</label>
               <input
@@ -75,15 +76,15 @@ const ReceiptDetail: React.FC<ReceiptDetailProps> = ({ receipt, onClose, onSave,
                 />
               </div>
               <div>
-                 <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">In EUR (€)</label>
-                 <div className="w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-900 border border-transparent font-mono text-gray-500 dark:text-gray-400">
-                   {formData.amountInEur.toFixed(2)}
-                 </div>
+                <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">In {targetCurrency}</label>
+                <div className="w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-900 border border-transparent font-mono text-gray-500 dark:text-gray-400">
+                  {formData.convertedAmount?.toFixed(2)}
+                </div>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-               <div>
+              <div>
                 <label className="block text-xs font-semibold uppercase text-gray-500 mb-1 flex items-center gap-1">
                   <Percent size={12} /> VAT ({formData.currency})
                 </label>
@@ -95,7 +96,7 @@ const ReceiptDetail: React.FC<ReceiptDetailProps> = ({ receipt, onClose, onSave,
                 />
               </div>
               <div>
-                 {/* Spacer or Tax Rate if needed later */}
+                {/* Spacer or Tax Rate if needed later */}
               </div>
             </div>
 
@@ -112,8 +113,8 @@ const ReceiptDetail: React.FC<ReceiptDetailProps> = ({ receipt, onClose, onSave,
                 />
               </div>
               <div>
-                 <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Time</label>
-                 <input
+                <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Time</label>
+                <input
                   type="time"
                   value={formData.time}
                   onChange={(e) => handleChange('time', e.target.value)}
@@ -172,13 +173,13 @@ const ReceiptDetail: React.FC<ReceiptDetailProps> = ({ receipt, onClose, onSave,
           </div>
 
           <div className="pt-6 pb-12 flex gap-4">
-            <button 
+            <button
               onClick={() => onDelete(formData.id)}
               className="px-6 py-3 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-bold rounded-xl hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
             >
               Delete
             </button>
-            <button 
+            <button
               onClick={() => onSave(formData)}
               className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-xl hover:opacity-90 shadow-lg shadow-primary/25 transition-all"
             >

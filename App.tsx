@@ -7,7 +7,8 @@ import ReceiptDetail from './components/ReceiptDetail';
 import MapView from './components/MapView';
 import Auth from './components/Auth';
 import { ReceiptData } from './types';
-import { Moon, Sun, Loader2, WifiOff, Database, Save as SaveIcon, AlertTriangle, Copy, Terminal, LogOut } from 'lucide-react';
+import { Moon, Sun, Loader2, WifiOff, Database, Save as SaveIcon, AlertTriangle, Copy, Terminal, LogOut, Settings } from 'lucide-react';
+import SettingsModal from './components/SettingsModal';
 import {
   supabase,
   mapReceiptFromDB,
@@ -29,10 +30,29 @@ const App: React.FC = () => {
   const [connectionError, setConnectionError] = useState(false);
   const [uploadingState, setUploadingState] = useState(false);
   const [migrationNeeded, setMigrationNeeded] = useState(false);
+  const [targetCurrency, setTargetCurrency] = useState('EUR');
+  const [showSettings, setShowSettings] = useState(false);
 
   // Setup Form State
   const [setupUrl, setSetupUrl] = useState('');
   const [setupKey, setSetupKey] = useState('');
+
+  // Fetch User Settings
+  const fetchSettings = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_settings')
+        .select('preferred_currency')
+        .eq('user_id', userId)
+        .single();
+
+      if (data?.preferred_currency) {
+        setTargetCurrency(data.preferred_currency);
+      }
+    } catch (err) {
+      console.error("Error fetching settings:", err);
+    }
+  };
 
   // Initialize Auth & Theme
   useEffect(() => {
@@ -56,6 +76,7 @@ const App: React.FC = () => {
       } else {
         setSession(session);
         if (session) {
+          fetchSettings(session.user.id);
           fetchReceipts();
         } else {
           setIsLoading(false); // Stop loading to show Login screen
@@ -67,6 +88,7 @@ const App: React.FC = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) {
+        fetchSettings(session.user.id);
         fetchReceipts();
       } else {
         setReceipts([]);
@@ -178,6 +200,12 @@ const App: React.FC = () => {
     }
   };
 
+  const handleSettingsSave = (newCurrency: string) => {
+    setTargetCurrency(newCurrency);
+    // Optionally refetch receipts if we want to try and re-convert (but we can't really without rates)
+    // For now, just the new setting applies to new scans and display of existing converted amounts
+  };
+
   const handleUpdateReceipt = async (updated: ReceiptData) => {
     if (!session?.user?.id) return;
 
@@ -244,8 +272,9 @@ create table receipts (
   amount numeric,
   currency text,
   vat numeric,
-  exchange_rate_to_eur numeric,
-  amount_in_eur numeric,
+  exchange_rate numeric,
+  converted_amount numeric,
+  target_currency text,
   category text,
   type text,
   image_path text,
@@ -271,7 +300,16 @@ with check ( bucket_id = 'receipts' );
 
 create policy "Users can view own receipts"
 on storage.objects for select to authenticated
-using ( bucket_id = 'receipts' and auth.uid() = owner );`;
+using ( bucket_id = 'receipts' and auth.uid() = owner );
+
+-- 5. User Settings
+create table user_settings (
+  user_id uuid references auth.users not null primary key,
+  preferred_currency text default 'EUR'
+);
+alter table user_settings enable row level security;
+create policy "Users can manage own settings" on user_settings for all using (auth.uid() = user_id);
+`;
 
     navigator.clipboard.writeText(sql);
     alert("SQL copied to clipboard!");
@@ -378,8 +416,9 @@ create table receipts (
   amount numeric,
   currency text,
   vat numeric,
-  exchange_rate_to_eur numeric,
-  amount_in_eur numeric,
+  exchange_rate numeric,
+  converted_amount numeric,
+  target_currency text,
   category text,
   type text,
   image_path text,
@@ -405,7 +444,15 @@ with check ( bucket_id = 'receipts' );
 
 create policy "Users can view own receipts"
 on storage.objects for select to authenticated
-using ( bucket_id = 'receipts' and auth.uid() = owner );`}
+using ( bucket_id = 'receipts' and auth.uid() = owner );
+
+-- 5. User Settings
+create table user_settings (
+  user_id uuid references auth.users not null primary key,
+  preferred_currency text default 'EUR'
+);
+alter table user_settings enable row level security;
+create policy "Users can manage own settings" on user_settings for all using (auth.uid() = user_id);`}
             </code>
           </div>
 
@@ -448,6 +495,13 @@ using ( bucket_id = 'receipts' and auth.uid() = owner );`}
             {darkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
           <button
+            onClick={() => setShowSettings(true)}
+            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-slate-600 dark:text-gray-300 transition-colors"
+            title="Settings"
+          >
+            <Settings size={20} />
+          </button>
+          <button
             onClick={handleLogout}
             className="p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 transition-colors ml-1"
             title="Logout"
@@ -466,6 +520,7 @@ using ( bucket_id = 'receipts' and auth.uid() = owner );`}
             onViewAll={() => setView('list')}
             onViewMap={() => setView('map')}
             onSelectReceipt={setSelectedReceipt}
+            targetCurrency={targetCurrency}
           />
         )}
 
@@ -474,6 +529,7 @@ using ( bucket_id = 'receipts' and auth.uid() = owner );`}
             receipts={receipts}
             onBack={() => setView('dashboard')}
             onSelectReceipt={setSelectedReceipt}
+            targetCurrency={targetCurrency}
           />
         )}
       </main>
@@ -492,6 +548,7 @@ using ( bucket_id = 'receipts' and auth.uid() = owner );`}
         <Scanner
           onScanComplete={handleScanComplete}
           onCancel={() => setIsScanning(false)}
+          targetCurrency={targetCurrency}
         />
       )}
 
@@ -501,6 +558,15 @@ using ( bucket_id = 'receipts' and auth.uid() = owner );`}
           onClose={() => setSelectedReceipt(null)}
           onSave={handleUpdateReceipt}
           onDelete={handleDeleteReceipt}
+          targetCurrency={targetCurrency}
+        />
+      )}
+
+      {showSettings && (
+        <SettingsModal
+          currentCurrency={targetCurrency}
+          onClose={() => setShowSettings(false)}
+          onSave={handleSettingsSave}
         />
       )}
 

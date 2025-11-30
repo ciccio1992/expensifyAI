@@ -22,9 +22,9 @@ const getSupabaseConfig = () => {
   }
 
   // 3. Fallback to placeholders (will cause connection error, triggering the UI setup screen)
-  return { 
-    url: 'https://jfovetspnxevnaafqukn.supabase.co', 
-    key: 'sb_publishable_7ug_NqKBXIunK03JLcCMIg_diO2AqFd' 
+  return {
+    url: 'https://jfovetspnxevnaafqukn.supabase.co',
+    key: 'sb_publishable_7ug_NqKBXIunK03JLcCMIg_diO2AqFd'
   };
 };
 
@@ -44,12 +44,12 @@ const STORAGE_BUCKET = 'receipts';
  */
 export const uploadReceiptImage = async (userId: string, imageBlob: Blob): Promise<string | null> => {
   if (!imageBlob || imageBlob.size === 0) {
-     console.warn("Invalid image blob provided for upload");
-     return null;
+    console.warn("Invalid image blob provided for upload");
+    return null;
   }
 
   const fileName = `${userId}/${Date.now()}_receipt.jpg`;
-  
+
   const { data, error } = await supabase.storage
     .from(STORAGE_BUCKET)
     .upload(fileName, imageBlob, {
@@ -94,8 +94,9 @@ export const mapReceiptFromDB = (data: any): ReceiptData => ({
   amount: data.amount,
   currency: data.currency,
   vat: data.vat || 0,
-  exchangeRateToEur: data.exchange_rate_to_eur,
-  amountInEur: data.amount_in_eur,
+  exchangeRate: data.exchange_rate,
+  convertedAmount: data.converted_amount,
+  targetCurrency: data.target_currency,
   category: data.category,
   type: data.type,
   imageBase64: '', // We load this asynchronously via signed URL
@@ -116,8 +117,9 @@ export const mapReceiptToDB = (receipt: ReceiptData, userId: string) => ({
   amount: receipt.amount,
   currency: receipt.currency,
   vat: receipt.vat,
-  exchange_rate_to_eur: receipt.exchangeRateToEur,
-  amount_in_eur: receipt.amountInEur,
+  exchange_rate: receipt.exchangeRate,
+  converted_amount: receipt.convertedAmount,
+  target_currency: receipt.targetCurrency,
   category: receipt.category,
   type: receipt.type,
   image_path: receipt.storagePath, // Save the path, not the base64
