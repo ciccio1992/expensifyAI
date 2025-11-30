@@ -1,0 +1,8 @@
+{
+  "name": "ExpensifyAI",
+  "description": "Smart receipt scanning and expense organization powered by Gemini.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}
