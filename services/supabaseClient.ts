@@ -33,7 +33,12 @@ const config = getSupabaseConfig();
 // DEBUG: Log the configured URL to ensure it matches the user's project
 console.log("Initializing Supabase Client with URL:", config.url);
 
-export const supabase = createClient(config.url, config.key);
+export const supabase = createClient(config.url, config.key, {
+  auth: {
+    detectSessionInUrl: true,
+    flowType: 'implicit',
+  },
+});
 
 // Storage Bucket Name
 const STORAGE_BUCKET = 'receipts';

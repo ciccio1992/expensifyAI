@@ -11,9 +11,10 @@ interface DashboardProps {
   onViewMap: () => void;
   onSelectReceipt: (r: ReceiptData) => void;
   targetCurrency: string;
+  userName: string;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onViewAll, onViewMap, onSelectReceipt, targetCurrency }) => {
+const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onViewAll, onViewMap, onSelectReceipt, targetCurrency, userName }) => {
   // Calculate Totals
   const totalBusiness = receipts
     .filter(r => r.type === ExpenseType.Business)
@@ -34,8 +35,25 @@ const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onViewAll, onVie
     { name: 'Private', value: totalPrivate, color: '#a855f7' },
   ].filter(d => d.value > 0);
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+  };
+
   return (
     <div className="space-y-6 pb-20">
+
+      {/* Header */}
+      <div className="mb-2">
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+          {getGreeting()}, <span className="text-primary">{userName || 'User'}</span>
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">
+          Here's your spending overview.
+        </p>
+      </div>
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -41,3 +41,9 @@ export interface ChartDataPoint {
   name: string;
   value: number;
 }
+
+export interface UserSettings {
+  userId: string;
+  preferredCurrency: string;
+  fullName?: string;
+}

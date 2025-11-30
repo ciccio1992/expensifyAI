@@ -49,10 +49,11 @@ const Auth: React.FC = () => {
           redirectTo: window.location.origin, // Returns user to this app after Google logic
           queryParams: {
             access_type: 'offline',
-            prompt: 'consent select_account', // Forces account picker to fix loop/403 issues
+            prompt: 'consent select_account',
           },
         }
       });
+      console.log("OAuth Redirect URL:", window.location.origin);
       if (error) throw error;
     } catch (err: any) {
       setError(err.message);

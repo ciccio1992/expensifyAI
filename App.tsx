@@ -32,7 +32,9 @@ const App: React.FC = () => {
   const [uploadingState, setUploadingState] = useState(false);
   const [migrationNeeded, setMigrationNeeded] = useState(false);
   const [targetCurrency, setTargetCurrency] = useState('EUR');
+  const [userName, setUserName] = useState<string>('');
   const [showSettings, setShowSettings] = useState(false);
+  const [showNamePrompt, setShowNamePrompt] = useState(false);
   const [exchangeRates, setExchangeRates] = useState<ExchangeRates | null>(null);
 
   // Setup Form State
@@ -44,12 +46,43 @@ const App: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('user_settings')
-        .select('preferred_currency')
+        .select('preferred_currency, full_name')
         .eq('user_id', userId)
         .single();
 
-      if (data?.preferred_currency) {
-        setTargetCurrency(data.preferred_currency);
+      if (data) {
+        if (data.preferred_currency) setTargetCurrency(data.preferred_currency);
+        if (data.full_name) {
+          setUserName(data.full_name);
+        } else {
+          // If no name found, check if we should prompt (e.g. if logged in via email)
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user?.app_metadata?.provider === 'email' || !user?.user_metadata?.full_name) {
+            setShowNamePrompt(true);
+          } else if (user?.user_metadata?.full_name) {
+            // If google login has name but DB doesn't, save it to DB
+            setUserName(user.user_metadata.full_name);
+            await supabase.from('user_settings').upsert({
+              user_id: userId,
+              full_name: user.user_metadata.full_name,
+              preferred_currency: data.preferred_currency || 'EUR'
+            });
+          }
+        }
+      } else {
+        // No settings found at all
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.user_metadata?.full_name) {
+          setUserName(user.user_metadata.full_name);
+          // Create initial settings
+          await supabase.from('user_settings').insert({
+            user_id: userId,
+            full_name: user.user_metadata.full_name,
+            preferred_currency: 'EUR'
+          });
+        } else {
+          setShowNamePrompt(true);
+        }
       }
     } catch (err) {
       console.error("Error fetching settings:", err);
@@ -260,8 +293,10 @@ const App: React.FC = () => {
     }
   };
 
-  const handleSettingsSave = (newCurrency: string) => {
+  const handleSettingsSave = (newCurrency: string, newName: string) => {
     setTargetCurrency(newCurrency);
+    setUserName(newName);
+    setShowNamePrompt(false);
     // Optionally refetch receipts if we want to try and re-convert (but we can't really without rates)
     // For now, just the new setting applies to new scans and display of existing converted amounts
   };
@@ -320,10 +355,11 @@ const App: React.FC = () => {
   };
 
   const copySQL = () => {
-    const sql = `-- 1. Reset Table
+    const sql = `-- 1. Reset Tables
 drop table if exists receipts;
+drop table if exists user_settings;
 
--- 2. Create Table
+-- 2. Create Receipts Table
 create table receipts (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users not null,
@@ -369,7 +405,8 @@ using ( bucket_id = 'receipts' and auth.uid() = owner );
 -- 5. User Settings
 create table user_settings (
   user_id uuid references auth.users not null primary key,
-  preferred_currency text default 'EUR'
+  preferred_currency text default 'EUR',
+  full_name text
 );
 alter table user_settings enable row level security;
 create policy "Users can manage own settings" on user_settings for all using (auth.uid() = user_id);
@@ -466,10 +503,11 @@ create policy "Users can manage own settings" on user_settings for all using (au
               </button>
             </div>
             <code className="text-xs text-green-400 font-mono block overflow-x-auto whitespace-pre-wrap h-64 overflow-y-auto no-scrollbar">
-              {`-- 1. Reset Table
+              {`-- 1. Reset Tables
 drop table if exists receipts;
+drop table if exists user_settings;
 
--- 2. Create Table
+-- 2. Create Receipts Table
 create table receipts (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users not null,
@@ -515,7 +553,8 @@ using ( bucket_id = 'receipts' and auth.uid() = owner );
 -- 5. User Settings
 create table user_settings (
   user_id uuid references auth.users not null primary key,
-  preferred_currency text default 'EUR'
+  preferred_currency text default 'EUR',
+  full_name text
 );
 alter table user_settings enable row level security;
 create policy "Users can manage own settings" on user_settings for all using (auth.uid() = user_id);`}
@@ -587,6 +626,7 @@ create policy "Users can manage own settings" on user_settings for all using (au
             onViewMap={() => setView('map')}
             onSelectReceipt={(r) => setSelectedReceiptId(r.id)}
             targetCurrency={targetCurrency}
+            userName={userName}
           />
         )}
 
@@ -632,8 +672,19 @@ create policy "Users can manage own settings" on user_settings for all using (au
       {showSettings && (
         <SettingsModal
           currentCurrency={targetCurrency}
+          currentName={userName}
           onClose={() => setShowSettings(false)}
           onSave={handleSettingsSave}
+        />
+      )}
+
+      {showNamePrompt && (
+        <SettingsModal
+          currentCurrency={targetCurrency}
+          currentName={userName}
+          onClose={() => { }} // Cannot close without saving if it's a forced prompt
+          onSave={handleSettingsSave}
+          isPrompt={true}
         />
       )}
 
