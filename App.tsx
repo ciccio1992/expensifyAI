@@ -17,6 +17,7 @@ import {
   getReceiptImageUrl
 } from './services/supabaseClient';
 import { base64ToBlob } from './services/imageUtils';
+import { fetchExchangeRates, convertCurrency, ExchangeRates } from './services/currencyService';
 
 const App: React.FC = () => {
   // State
@@ -32,6 +33,7 @@ const App: React.FC = () => {
   const [migrationNeeded, setMigrationNeeded] = useState(false);
   const [targetCurrency, setTargetCurrency] = useState('EUR');
   const [showSettings, setShowSettings] = useState(false);
+  const [exchangeRates, setExchangeRates] = useState<ExchangeRates | null>(null);
 
   // Setup Form State
   const [setupUrl, setSetupUrl] = useState('');
@@ -99,6 +101,17 @@ const App: React.FC = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Fetch Exchange Rates
+  useEffect(() => {
+    const loadRates = async () => {
+      const rates = await fetchExchangeRates();
+      if (rates) {
+        setExchangeRates(rates);
+      }
+    };
+    loadRates();
+  }, []);
+
   // Fetch Receipts from DB and resolve Images
   const fetchReceipts = async () => {
     setIsLoading(true);
@@ -141,6 +154,27 @@ const App: React.FC = () => {
     }
   };
 
+  // Calculate Display Receipts (Dynamic Conversion)
+  const displayReceipts = React.useMemo(() => {
+    if (!exchangeRates) return receipts;
+
+    return receipts.map(receipt => {
+      const converted = convertCurrency(
+        receipt.amount,
+        receipt.currency,
+        targetCurrency,
+        exchangeRates
+      );
+
+      return {
+        ...receipt,
+        targetCurrency: targetCurrency,
+        convertedAmount: converted,
+        exchangeRate: exchangeRates[targetCurrency] / exchangeRates[receipt.currency]
+      };
+    });
+  }, [receipts, targetCurrency, exchangeRates]);
+
   // Apply Theme
   useEffect(() => {
     if (darkMode) {
@@ -154,37 +188,58 @@ const App: React.FC = () => {
   const handleScanComplete = async (newReceipt: ReceiptData) => {
     if (!session?.user?.id) return;
 
-    // 1. Optimistic UI update (shows the base64 preview immediately)
-    setReceipts(prev => [newReceipt, ...prev]);
+    // 1. Apply Dynamic Conversion immediately if rates are available
+    let processedReceipt = { ...newReceipt };
+
+    if (exchangeRates) {
+      const converted = convertCurrency(
+        newReceipt.amount,
+        newReceipt.currency,
+        targetCurrency,
+        exchangeRates
+      );
+      // Calculate rate relative to target
+      const sourceRate = exchangeRates[newReceipt.currency] || 1;
+      const targetRate = exchangeRates[targetCurrency] || 1;
+      const rate = targetRate / sourceRate;
+
+      processedReceipt = {
+        ...newReceipt,
+        convertedAmount: converted,
+        exchangeRate: rate,
+        targetCurrency: targetCurrency
+      };
+    }
+
+    // 2. Optimistic UI update
+    setReceipts(prev => [processedReceipt, ...prev]);
     setIsScanning(false);
-    setSelectedReceipt(newReceipt); // Open detail view
-    setUploadingState(true); // Show a sync indicator somewhere if needed
+    setSelectedReceipt(processedReceipt); // Open detail view with corrected values
+    setUploadingState(true);
 
     try {
-      // 2. Convert Base64 back to Blob for upload
-      const imageBlob = base64ToBlob(newReceipt.imageBase64);
+      // 3. Convert Base64 back to Blob for upload
+      const imageBlob = base64ToBlob(processedReceipt.imageBase64);
 
-      // 3. Upload to Storage
+      // 4. Upload to Storage
       let storagePath = null;
       try {
         storagePath = await uploadReceiptImage(session.user.id, imageBlob);
       } catch (uploadErr) {
         console.error("Upload failed (Bucket likely missing):", uploadErr);
-        // We continue to try saving the data even if image upload fails, 
-        // but we'll likely hit the 'image_path' schema error next if the user hasn't run the SQL.
       }
 
-      // 4. Update the receipt object with the storage path
-      const receiptToSave = { ...newReceipt, storagePath: storagePath || undefined };
+      // 5. Update the receipt object with the storage path
+      const receiptToSave = { ...processedReceipt, storagePath: storagePath || undefined };
 
-      // 5. Save metadata to Database
+      // 6. Save metadata to Database
       const dbPayload = mapReceiptToDB(receiptToSave, session.user.id);
       const { error } = await supabase.from('receipts').insert([dbPayload]);
 
       if (error) throw error;
 
-      // 6. Update local state with the storage path to ensure consistency
-      setReceipts(prev => prev.map(r => r.id === newReceipt.id ? receiptToSave : r));
+      // 7. Update local state with the storage path to ensure consistency
+      setReceipts(prev => prev.map(r => r.id === processedReceipt.id ? receiptToSave : r));
 
     } catch (err: any) {
       console.error("Save Error:", err);
@@ -519,7 +574,7 @@ create policy "Users can manage own settings" on user_settings for all using (au
       <main className="pt-20 px-4 max-w-2xl mx-auto pb-10">
         {view === 'dashboard' && (
           <Dashboard
-            receipts={receipts}
+            receipts={displayReceipts}
             onAdd={() => setIsScanning(true)}
             onViewAll={() => setView('list')}
             onViewMap={() => setView('map')}
@@ -530,7 +585,7 @@ create policy "Users can manage own settings" on user_settings for all using (au
 
         {view === 'list' && (
           <ReceiptList
-            receipts={receipts}
+            receipts={displayReceipts}
             onBack={() => setView('dashboard')}
             onSelectReceipt={setSelectedReceipt}
             targetCurrency={targetCurrency}
@@ -541,7 +596,7 @@ create policy "Users can manage own settings" on user_settings for all using (au
       {/* Full Screen Overlays */}
       {view === 'map' && (
         <MapView
-          receipts={receipts}
+          receipts={displayReceipts}
           onClose={() => setView('dashboard')}
           onSelectReceipt={setSelectedReceipt}
           targetCurrency={targetCurrency}
