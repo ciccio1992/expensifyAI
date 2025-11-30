@@ -483,6 +483,7 @@ using ( bucket_id = 'receipts' and auth.uid() = owner );`}
         <MapView
           receipts={receipts}
           onClose={() => setView('dashboard')}
+          onSelectReceipt={setSelectedReceipt}
         />
       )}
 
