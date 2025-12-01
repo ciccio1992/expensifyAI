@@ -13,15 +13,20 @@ interface ExportModalProps {
 }
 
 const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, receipts, userName, targetCurrency }) => {
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
+    // Default to last 30 days
+    const [startDate, setStartDate] = useState(() => {
+        const d = new Date();
+        d.setDate(d.getDate() - 30);
+        return d.toISOString().split('T')[0];
+    });
+    const [endDate, setEndDate] = useState(() => new Date().toISOString().split('T')[0]);
     const [format, setFormat] = useState<'pdf' | 'csv'>('pdf');
 
     if (!isOpen) return null;
 
     const handleExport = () => {
         // Filter receipts
-        const filteredReceipts = receipts.filter(r => {
+        let filteredReceipts = receipts.filter(r => {
             if (!startDate && !endDate) return true;
             const rDate = new Date(r.date);
             const start = startDate ? new Date(startDate) : new Date('1970-01-01');
@@ -30,6 +35,9 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, receipts, us
             end.setHours(23, 59, 59, 999);
             return rDate >= start && rDate <= end;
         });
+
+        // Sort Chronologically (Oldest to Newest)
+        filteredReceipts.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
         if (filteredReceipts.length === 0) {
             alert("No receipts found for the selected date range.");
@@ -172,8 +180,8 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, receipts, us
                             <button
                                 onClick={() => setFormat('pdf')}
                                 className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${format === 'pdf'
-                                        ? 'border-primary bg-primary/5 text-primary'
-                                        : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-500'
+                                    ? 'border-primary bg-primary/5 text-primary'
+                                    : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-500'
                                     }`}
                             >
                                 <FileText size={32} />
@@ -182,8 +190,8 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, receipts, us
                             <button
                                 onClick={() => setFormat('csv')}
                                 className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${format === 'csv'
-                                        ? 'border-primary bg-primary/5 text-primary'
-                                        : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-500'
+                                    ? 'border-primary bg-primary/5 text-primary'
+                                    : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-500'
                                     }`}
                             >
                                 <FileSpreadsheet size={32} />

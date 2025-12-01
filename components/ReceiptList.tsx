@@ -164,10 +164,11 @@ const ReceiptList: React.FC<ReceiptListProps> = ({ receipts, onBack, onSelectRec
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => setShowExportModal(true)}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-slate-600 dark:text-gray-300 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl shadow-lg shadow-primary/25 hover:opacity-90 transition-opacity font-bold text-sm"
                         title="Export Data"
                     >
-                        <Download size={24} />
+                        <Download size={18} />
+                        Export
                     </button>
                     <button
                         onClick={() => setShowChart(!showChart)}
