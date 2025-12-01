@@ -1,5 +1,11 @@
 # Commit History
 
+## Fix Scanner Navigation
+- **Date**: 2025-12-01
+- **Features**:
+  - Fixed the "Add Receipt" button not opening the scanner by adding the `Scanner` component to the `App` render method.
+- **Files**: `App.tsx`.
+
 ## Feedback Feature
 - **Date**: 2025-12-01
 - **Features**:

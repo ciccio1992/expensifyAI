@@ -879,6 +879,19 @@ create policy "Users can manage own settings" on user_settings for all using (au
         )}
       </main>
 
+      {/* Scanner Overlay */}
+      {isScanning && (
+        <Scanner
+          onScanComplete={handleScanComplete}
+          onCancel={() => setIsScanning(false)}
+          onManualEntry={() => {
+            setIsScanning(false);
+            setShowManualEntry(true);
+          }}
+          targetCurrency={targetCurrency}
+        />
+      )}
+
       {/* Manual Entry Modal */}
       {showManualEntry && (
         <ManualEntryModal
