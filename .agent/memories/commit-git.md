@@ -1,5 +1,11 @@
 # Commit History
 
+## Fix Manual Entry Save Crash
+- **Date**: 2025-12-01
+- **Features**:
+  - Fixed a crash in `ManualEntryModal` caused by using an emoji in `btoa` for the placeholder image generation. Replaced the emoji with ASCII SVG shapes.
+- **Files**: `components/ManualEntryModal.tsx`.
+
 ## Fix Receipt Details & Manual Entry
 - **Date**: 2025-12-01
 - **Features**:

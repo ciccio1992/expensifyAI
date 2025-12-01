@@ -28,15 +28,16 @@ const ManualEntryModal: React.FC<ManualEntryModalProps> = ({ onClose, onSubmit, 
         }
 
         // Create a simple colored placeholder image with text
-        // This is a 1x1 pixel transparent GIF as a fallback, but we can do better with an SVG data URI
+        // Note: btoa fails with unicode characters (like emojis), so we use simple shapes/text
         const placeholderImage = `data:image/svg+xml;base64,${btoa(`
       <svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 400 600" style="background-color: #f3f4f6;">
         <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" fill="#9ca3af">
           Manual Entry
         </text>
-        <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="48" fill="#d1d5db">
-          📝
-        </text>
+        <rect x="175" y="320" width="50" height="80" fill="#d1d5db" rx="5" />
+        <line x1="185" y1="335" x2="215" y2="335" stroke="#9ca3af" stroke-width="2" />
+        <line x1="185" y1="350" x2="215" y2="350" stroke="#9ca3af" stroke-width="2" />
+        <line x1="185" y1="365" x2="205" y2="365" stroke="#9ca3af" stroke-width="2" />
       </svg>
     `)}`;
 
