@@ -7,7 +7,6 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recha
 interface DashboardProps {
   receipts: ReceiptData[];
   onAdd: () => void;
-  onAddManual: () => void;
   onViewAll: () => void;
   onViewMap: () => void;
   onSelectReceipt: (r: ReceiptData) => void;
@@ -17,7 +16,7 @@ interface DashboardProps {
 
 const COLORS = ['#6366f1', '#a855f7', '#ec4899', '#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#64748b'];
 
-const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onAddManual, onViewAll, onViewMap, onSelectReceipt, targetCurrency, userName }) => {
+const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onViewAll, onViewMap, onSelectReceipt, targetCurrency, userName }) => {
   // Calculate Totals
   const totalBusiness = receipts
     .filter(r => r.type === ExpenseType.Business)
@@ -234,24 +233,14 @@ const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onAddManual, onV
         )}
       </div>
 
-      {/* Floating Action Buttons */}
-      <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-30 items-end">
-        <button
-          onClick={onAddManual}
-          className="w-12 h-12 bg-white dark:bg-gray-800 text-slate-700 dark:text-gray-200 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:scale-105 transition-transform"
-          title="Manual Entry"
-        >
-          <span className="sr-only">Manual Entry</span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-        </button>
-        <button
-          onClick={onAdd}
-          className="w-14 h-14 bg-gradient-to-tr from-primary to-secondary text-white rounded-full shadow-lg shadow-primary/40 flex items-center justify-center hover:scale-105 transition-transform"
-          title="Scan Receipt"
-        >
-          <Plus size={28} />
-        </button>
-      </div>
+      {/* Floating Action Button */}
+      <button
+        onClick={onAdd}
+        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-tr from-primary to-secondary text-white rounded-full shadow-lg shadow-primary/40 flex items-center justify-center hover:scale-105 transition-transform z-30"
+        title="Add Receipt"
+      >
+        <Plus size={28} />
+      </button>
     </div>
   );
 };

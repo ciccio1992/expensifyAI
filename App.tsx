@@ -860,7 +860,6 @@ create policy "Users can manage own settings" on user_settings for all using (au
           <Dashboard
             receipts={displayReceipts}
             onAdd={() => setIsScanning(true)}
-            onAddManual={() => setShowManualEntry(true)}
             onViewAll={() => setView('list')}
             onViewMap={() => setView('map')}
             onSelectReceipt={(r) => setSelectedReceiptId(r.id)}
@@ -895,25 +894,6 @@ create policy "Users can manage own settings" on user_settings for all using (au
           receipts={displayReceipts}
           onClose={() => setView('dashboard')}
           onSelectReceipt={(r) => setSelectedReceiptId(r.id)}
-          targetCurrency={targetCurrency}
-        />
-      )}
-
-      {/* Modals/Overlays */}
-      {isScanning && (
-        <Scanner
-          onScanComplete={handleScanComplete}
-          onCancel={() => setIsScanning(false)}
-          targetCurrency={targetCurrency}
-        />
-      )}
-
-      {selectedReceipt && (
-        <ReceiptDetail
-          receipt={selectedReceipt}
-          onClose={() => setSelectedReceiptId(null)}
-          onSave={handleUpdateReceipt}
-          onDelete={handleDeleteReceipt}
           targetCurrency={targetCurrency}
         />
       )}

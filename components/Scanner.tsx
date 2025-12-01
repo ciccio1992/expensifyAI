@@ -8,10 +8,11 @@ import { v4 as uuidv4 } from 'uuid';
 interface ScannerProps {
   onScanComplete: (receipt: ReceiptData) => void;
   onCancel: () => void;
+  onManualEntry: () => void;
   targetCurrency: string;
 }
 
-const Scanner: React.FC<ScannerProps> = ({ onScanComplete, onCancel, targetCurrency }) => {
+const Scanner: React.FC<ScannerProps> = ({ onScanComplete, onCancel, onManualEntry, targetCurrency }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deviceLocation, setDeviceLocation] = useState<{ lat: number, lng: number } | null>(null);
@@ -119,6 +120,20 @@ const Scanner: React.FC<ScannerProps> = ({ onScanComplete, onCancel, targetCurre
               </div>
               <p className="text-lg font-medium text-white">Capture or Upload</p>
               <p className="text-sm text-gray-500 mt-2">Supports JPG, PNG (Max 5MB)</p>
+            </button>
+
+            <div className="relative flex py-2 items-center">
+              <div className="flex-grow border-t border-gray-700"></div>
+              <span className="flex-shrink-0 mx-4 text-gray-500 text-xs uppercase">Or</span>
+              <div className="flex-grow border-t border-gray-700"></div>
+            </div>
+
+            <button
+              onClick={onManualEntry}
+              className="w-full py-4 bg-gray-800 hover:bg-gray-700 text-white font-bold rounded-xl border border-gray-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+              Enter Details Manually
             </button>
 
             <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
