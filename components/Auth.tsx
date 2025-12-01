@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { Mail, Lock, Loader2, LogIn, UserPlus, AlertCircle, HelpCircle } from 'lucide-react';
 
-const Auth: React.FC = () => {
+const Auth: React.FC<{ onGuestLogin: () => void }> = ({ onGuestLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -172,6 +172,18 @@ const Auth: React.FC = () => {
           </svg>
           Sign in with Google
         </button>
+
+        <div className="mt-6 text-center">
+          <button
+            onClick={onGuestLogin}
+            className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 underline"
+          >
+            Proceed without account
+          </button>
+          <p className="text-xs text-gray-400 mt-1">
+            Data stored locally. Cleared on cache reset.
+          </p>
+        </div>
 
         <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800 text-center">
           <p className="text-sm text-gray-500">

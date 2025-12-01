@@ -63,7 +63,7 @@ Need to submit an expense report?
 ## ☕ Support
 
 If you find this project useful, consider buying me a coffee!
-The app includes a built-in donation feature that appears in the Settings menu and after your 3rd scan.
+The app includes a built-in donation feature that also appears in the Settings menu.
 
 [![Buy Me A Coffee](https://img.shields.io/badge/Donate-Buy%20Me%20A%20Coffee-orange.svg)](https://ko-fi.com/andreamura)
 

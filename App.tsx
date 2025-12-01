@@ -7,7 +7,7 @@ import ReceiptDetail from './components/ReceiptDetail';
 import MapView from './components/MapView';
 import Auth from './components/Auth';
 import { ReceiptData } from './types';
-import { Moon, Sun, Loader2, WifiOff, Database, Save as SaveIcon, AlertTriangle, Copy, Terminal, LogOut, Settings } from 'lucide-react';
+import { Moon, Sun, Loader2, WifiOff, Database, Save as SaveIcon, AlertTriangle, Copy, Terminal, LogOut, LogIn, Settings } from 'lucide-react';
 import SettingsModal from './components/SettingsModal';
 import DonationModal from './components/DonationModal';
 import {
@@ -29,6 +29,7 @@ const App: React.FC = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
+  const [isGuest, setIsGuest] = useState(false);
   const [connectionError, setConnectionError] = useState(false);
   const [uploadingState, setUploadingState] = useState(false);
   const [migrationNeeded, setMigrationNeeded] = useState(false);
@@ -91,64 +92,17 @@ const App: React.FC = () => {
     }
   };
 
-  // Initialize Auth & Theme
-  useEffect(() => {
-    // Theme
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setDarkMode(true);
-    }
-
-    // Load saved settings for UI if available
-    const savedUrl = localStorage.getItem('sb_url');
-    const savedKey = localStorage.getItem('sb_key');
-    if (savedUrl) setSetupUrl(savedUrl);
-    if (savedKey) setSetupKey(savedKey);
-
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (error) {
-        console.error("Session check error:", error);
-        setConnectionError(true);
-        setIsLoading(false);
-      } else {
-        setSession(session);
-        if (session) {
-          fetchSettings(session.user.id);
-          fetchReceipts();
-        } else {
-          setIsLoading(false); // Stop loading to show Login screen
-        }
-      }
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (session) {
-        fetchSettings(session.user.id);
-        fetchReceipts();
-      } else {
-        setReceipts([]);
-        setIsLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // Fetch Exchange Rates
-  useEffect(() => {
-    const loadRates = async () => {
-      const rates = await fetchExchangeRates();
-      if (rates) {
-        setExchangeRates(rates);
-      }
-    };
-    loadRates();
-  }, []);
-
   // Fetch Receipts from DB and resolve Images
   const fetchReceipts = async () => {
+    if (isGuest) {
+      const localData = localStorage.getItem('guest_receipts');
+      if (localData) {
+        setReceipts(JSON.parse(localData));
+      }
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const { data, error } = await supabase
@@ -189,6 +143,142 @@ const App: React.FC = () => {
     }
   };
 
+  // Sync Guest Data
+  const syncGuestData = async (userId: string) => {
+    const localData = localStorage.getItem('guest_receipts');
+    if (!localData) return;
+
+    const guestReceipts: ReceiptData[] = JSON.parse(localData);
+    if (guestReceipts.length === 0) return;
+
+    // Ask user
+    const shouldSync = window.confirm(
+      `You have ${guestReceipts.length} receipts from your guest session.\n\nDo you want to save them to your account?`
+    );
+
+    if (shouldSync) {
+      setUploadingState(true);
+      try {
+        let successCount = 0;
+        for (const receipt of guestReceipts) {
+          try {
+            // Convert base64 to blob
+            const imageBlob = base64ToBlob(receipt.imageBase64);
+
+            // Upload Image
+            const storagePath = await uploadReceiptImage(userId, imageBlob);
+
+            // Prepare DB Entry
+            const dbPayload = mapReceiptToDB({
+              ...receipt,
+              storagePath: storagePath || undefined
+            }, userId);
+
+            const { error } = await supabase.from('receipts').insert([dbPayload]);
+            if (error) throw error;
+
+            successCount++;
+          } catch (err) {
+            console.error("Failed to sync receipt:", receipt.merchantName, err);
+          }
+        }
+
+        if (successCount > 0) {
+          alert(`Successfully synced ${successCount} receipts!`);
+          localStorage.removeItem('guest_receipts');
+          fetchReceipts();
+        } else {
+          alert("Failed to sync receipts.");
+        }
+      } catch (err) {
+        console.error("Sync process error:", err);
+      } finally {
+        setUploadingState(false);
+      }
+    } else {
+      // User declined. Ask to clear.
+      if (window.confirm("Do you want to discard these guest receipts? \n\nClick OK to delete them, or Cancel to keep them locally (they won't be visible in your account).")) {
+        localStorage.removeItem('guest_receipts');
+      }
+    }
+  };
+
+  // Initialize Auth & Theme
+  useEffect(() => {
+    // Theme
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      setDarkMode(true);
+    }
+
+    // Load saved settings for UI if available
+    const savedUrl = localStorage.getItem('sb_url');
+    const savedKey = localStorage.getItem('sb_key');
+    if (savedUrl) setSetupUrl(savedUrl);
+    if (savedKey) setSetupKey(savedKey);
+
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error("Session check error:", error);
+        setConnectionError(true);
+        setIsLoading(false);
+      } else {
+        setSession(session);
+        if (session) {
+          setIsGuest(false);
+          localStorage.removeItem('isGuest');
+          fetchSettings(session.user.id);
+          fetchReceipts();
+          syncGuestData(session.user.id);
+        } else {
+          // Check for guest mode
+          const guest = localStorage.getItem('isGuest') === 'true';
+          if (guest) {
+            setIsGuest(true);
+            const localData = localStorage.getItem('guest_receipts');
+            if (localData) {
+              setReceipts(JSON.parse(localData));
+            }
+            setIsLoading(false);
+          } else {
+            setIsLoading(false); // Stop loading to show Login screen
+          }
+        }
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) {
+        setIsGuest(false);
+        localStorage.removeItem('isGuest');
+        fetchSettings(session.user.id);
+        fetchReceipts();
+        syncGuestData(session.user.id);
+      } else {
+        // Only clear receipts if we are not switching to guest mode (which is handled manually)
+        if (!localStorage.getItem('isGuest')) {
+          setReceipts([]);
+        }
+        setIsLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch Exchange Rates
+  useEffect(() => {
+    const loadRates = async () => {
+      const rates = await fetchExchangeRates();
+      if (rates) {
+        setExchangeRates(rates);
+      }
+    };
+    loadRates();
+  }, []);
+
   // Calculate Display Receipts (Dynamic Conversion)
   const displayReceipts = React.useMemo(() => {
     if (!exchangeRates) return receipts;
@@ -226,7 +316,7 @@ const App: React.FC = () => {
 
   // Handlers
   const handleScanComplete = async (newReceipt: ReceiptData) => {
-    if (!session?.user?.id) return;
+    if (!session?.user?.id && !isGuest) return;
 
     // 1. Apply Dynamic Conversion immediately if rates are available
     let processedReceipt = { ...newReceipt };
@@ -261,6 +351,12 @@ const App: React.FC = () => {
     // Check for 3rd receipt donation prompt
     if (updatedReceipts.length === 3) {
       setTimeout(() => setShowDonationPopup(true), 1500); // Show after a short delay
+    }
+
+    if (isGuest) {
+      localStorage.setItem('guest_receipts', JSON.stringify(updatedReceipts));
+      setUploadingState(false);
+      return;
     }
 
     try {
@@ -310,11 +406,18 @@ const App: React.FC = () => {
   };
 
   const handleUpdateReceipt = async (updated: ReceiptData) => {
-    if (!session?.user?.id) return;
+    if (!session?.user?.id && !isGuest) return;
 
     // Optimistic Update
     setReceipts(prev => prev.map(r => r.id === updated.id ? updated : r));
     setSelectedReceiptId(null);
+
+    if (isGuest) {
+      const updatedReceipts = receipts.map(r => r.id === updated.id ? updated : r);
+      setReceipts(updatedReceipts);
+      localStorage.setItem('guest_receipts', JSON.stringify(updatedReceipts));
+      return;
+    }
 
     try {
       const dbPayload = mapReceiptToDB(updated, session.user.id);
@@ -338,6 +441,13 @@ const App: React.FC = () => {
       setReceipts(prev => prev.filter(r => r.id !== id));
       setSelectedReceiptId(null);
 
+      if (isGuest) {
+        const updatedReceipts = receipts.filter(r => r.id !== id);
+        setReceipts(updatedReceipts);
+        localStorage.setItem('guest_receipts', JSON.stringify(updatedReceipts));
+        return;
+      }
+
       try {
         const { error } = await supabase.from('receipts').delete().eq('id', id);
         if (error) throw error;
@@ -348,8 +458,27 @@ const App: React.FC = () => {
   };
 
   const handleLogout = async () => {
+    if (isGuest) {
+      setIsGuest(false);
+      localStorage.removeItem('isGuest');
+      setReceipts([]);
+      setView('dashboard');
+      return;
+    }
     await supabase.auth.signOut();
     setView('dashboard');
+  };
+
+  const handleGuestLogin = () => {
+    setIsGuest(true);
+    localStorage.setItem('isGuest', 'true');
+    const localData = localStorage.getItem('guest_receipts');
+    if (localData) {
+      setReceipts(JSON.parse(localData));
+    } else {
+      setReceipts([]);
+    }
+    setIsLoading(false);
   };
 
   const saveConfiguration = () => {
@@ -485,9 +614,9 @@ create policy "Users can manage own settings" on user_settings for all using (au
     );
   }
 
-  // LOGIN SCREEN (If no session)
-  if (!session) {
-    return <Auth />;
+  // LOGIN SCREEN (If no session and not guest)
+  if (!session && !isGuest) {
+    return <Auth onGuestLogin={handleGuestLogin} />;
   }
 
   // MIGRATION MODAL
@@ -593,8 +722,15 @@ create policy "Users can manage own settings" on user_settings for all using (au
   return (
     <div className="min-h-screen font-sans bg-gray-50 dark:bg-dark transition-colors duration-300">
 
+      {/* Guest Banner */}
+      {isGuest && (
+        <div className="fixed top-0 left-0 right-0 h-8 bg-indigo-600 text-white text-xs font-medium flex items-center justify-center z-50 px-4">
+          <span>You are using Guest Mode. Data is stored locally. <button onClick={handleLogout} className="underline hover:text-indigo-200 ml-1">Create an account</button> to save permanently.</span>
+        </div>
+      )}
+
       {/* Top Bar */}
-      <header className="fixed top-0 left-0 right-0 h-16 bg-white/80 dark:bg-card/80 backdrop-blur-md z-30 border-b border-gray-200 dark:border-gray-800 px-4 flex items-center justify-between">
+      <header className={`fixed left-0 right-0 h-16 bg-white/80 dark:bg-card/80 backdrop-blur-md z-30 border-b border-gray-200 dark:border-gray-800 px-4 flex items-center justify-between ${isGuest ? 'top-8' : 'top-0'}`}>
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('dashboard')}>
           <img src="/logo.svg" alt="ExpensifyAI Logo" className="w-8 h-8 rounded-lg shadow-sm" />
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">ExpensifyAI</h1>
@@ -614,18 +750,28 @@ create policy "Users can manage own settings" on user_settings for all using (au
           >
             <Settings size={20} />
           </button>
-          <button
-            onClick={handleLogout}
-            className="p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 transition-colors ml-1"
-            title="Logout"
-          >
-            <LogOut size={20} />
-          </button>
+          {isGuest ? (
+            <button
+              onClick={handleLogout}
+              className="ml-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-bold rounded-lg shadow-md transition-colors flex items-center gap-2"
+              title="Sign In to save your data"
+            >
+              <LogIn size={16} /> Sign In
+            </button>
+          ) : (
+            <button
+              onClick={handleLogout}
+              className="p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 transition-colors ml-1"
+              title="Logout"
+            >
+              <LogOut size={20} />
+            </button>
+          )}
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="pt-20 px-4 max-w-2xl mx-auto pb-10">
+      <main className={`px-4 max-w-2xl mx-auto pb-10 ${isGuest ? 'pt-28' : 'pt-20'}`}>
         {view === 'dashboard' && (
           <Dashboard
             receipts={displayReceipts}
