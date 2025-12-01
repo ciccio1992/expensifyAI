@@ -82,4 +82,5 @@
   - Refactored Google Login to use `@react-oauth/google` for a client-side popup flow.
   - Replaced Supabase redirect auth with `signInWithIdToken`.
   - Added `GoogleOAuthProvider` and `GoogleLogin` to `Auth.tsx`.
-- **Files**: `components/Auth.tsx`.
+  - Fixed build error by installing `@react-oauth/google`.
+- **Files**: `components/Auth.tsx`, `package.json`.
