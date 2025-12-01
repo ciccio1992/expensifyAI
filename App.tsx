@@ -9,6 +9,7 @@ import Auth from './components/Auth';
 import { ReceiptData } from './types';
 import { Moon, Sun, Loader2, WifiOff, Database, Save as SaveIcon, AlertTriangle, Copy, Terminal, LogOut, Settings } from 'lucide-react';
 import SettingsModal from './components/SettingsModal';
+import DonationModal from './components/DonationModal';
 import {
   supabase,
   mapReceiptFromDB,
@@ -35,6 +36,7 @@ const App: React.FC = () => {
   const [userName, setUserName] = useState<string>('');
   const [showSettings, setShowSettings] = useState(false);
   const [showNamePrompt, setShowNamePrompt] = useState(false);
+  const [showDonationPopup, setShowDonationPopup] = useState(false);
   const [exchangeRates, setExchangeRates] = useState<ExchangeRates | null>(null);
 
   // Setup Form State
@@ -250,10 +252,16 @@ const App: React.FC = () => {
     }
 
     // 2. Optimistic UI update
-    setReceipts(prev => [processedReceipt, ...prev]);
+    const updatedReceipts = [processedReceipt, ...receipts];
+    setReceipts(updatedReceipts);
     setIsScanning(false);
     setSelectedReceiptId(processedReceipt.id); // Open detail view with corrected values
     setUploadingState(true);
+
+    // Check for 3rd receipt donation prompt
+    if (updatedReceipts.length === 3) {
+      setTimeout(() => setShowDonationPopup(true), 1500); // Show after a short delay
+    }
 
     try {
       // 3. Convert Base64 back to Blob for upload
@@ -687,6 +695,10 @@ create policy "Users can manage own settings" on user_settings for all using (au
           onSave={handleSettingsSave}
           isPrompt={true}
         />
+      )}
+
+      {showDonationPopup && (
+        <DonationModal onClose={() => setShowDonationPopup(false)} />
       )}
 
     </div>

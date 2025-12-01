@@ -105,6 +105,19 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ currentCurrency, currentN
                             This currency will be used for all future receipt scans and dashboard statistics.
                         </p>
                     </div>
+
+                    {/* Support Section */}
+                    <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+                        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                            Support
+                        </h3>
+                        <button
+                            onClick={() => window.open(import.meta.env.VITE_KOFI_URL, '_blank')}
+                            className="w-full py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold rounded-xl shadow-lg shadow-orange-500/25 hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                        >
+                            <span role="img" aria-label="coffee">☕</span> Buy me a coffee
+                        </button>
+                    </div>
                 </div>
 
                 <div className="p-4 bg-gray-50 dark:bg-gray-800/50 flex justify-end gap-3">
