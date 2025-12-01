@@ -39,6 +39,7 @@ const App: React.FC = () => {
   const [showNamePrompt, setShowNamePrompt] = useState(false);
   const [showDonationPopup, setShowDonationPopup] = useState(false);
   const [exchangeRates, setExchangeRates] = useState<ExchangeRates | null>(null);
+  const [authInitialLogin, setAuthInitialLogin] = useState(true);
 
   // Setup Form State
   const [setupUrl, setSetupUrl] = useState('');
@@ -457,16 +458,18 @@ const App: React.FC = () => {
     }
   };
 
-  const handleLogout = async () => {
+  const handleLogout = async (shouldLogin: boolean = true) => {
     if (isGuest) {
       setIsGuest(false);
       localStorage.removeItem('isGuest');
       setReceipts([]);
       setView('dashboard');
+      setAuthInitialLogin(shouldLogin);
       return;
     }
     await supabase.auth.signOut();
     setView('dashboard');
+    setAuthInitialLogin(true);
   };
 
   const handleGuestLogin = () => {
@@ -616,7 +619,7 @@ create policy "Users can manage own settings" on user_settings for all using (au
 
   // LOGIN SCREEN (If no session and not guest)
   if (!session && !isGuest) {
-    return <Auth onGuestLogin={handleGuestLogin} />;
+    return <Auth onGuestLogin={handleGuestLogin} initialIsLogin={authInitialLogin} />;
   }
 
   // MIGRATION MODAL
@@ -725,7 +728,7 @@ create policy "Users can manage own settings" on user_settings for all using (au
       {/* Guest Banner */}
       {isGuest && (
         <div className="fixed top-0 left-0 right-0 h-8 bg-indigo-600 text-white text-xs font-medium flex items-center justify-center z-50 px-4">
-          <span>You are using Guest Mode. Data is stored locally. <button onClick={handleLogout} className="underline hover:text-indigo-200 ml-1">Create an account</button> to save permanently.</span>
+          <span>You are using Guest Mode. Data is stored locally. <button onClick={() => handleLogout(false)} className="underline hover:text-indigo-200 ml-1">Create an account</button> to save permanently.</span>
         </div>
       )}
 
@@ -752,7 +755,7 @@ create policy "Users can manage own settings" on user_settings for all using (au
           </button>
           {isGuest ? (
             <button
-              onClick={handleLogout}
+              onClick={() => handleLogout(true)}
               className="ml-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-bold rounded-lg shadow-md transition-colors flex items-center gap-2"
               title="Sign In to save your data"
             >
@@ -760,7 +763,7 @@ create policy "Users can manage own settings" on user_settings for all using (au
             </button>
           ) : (
             <button
-              onClick={handleLogout}
+              onClick={() => handleLogout(true)}
               className="p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 transition-colors ml-1"
               title="Logout"
             >

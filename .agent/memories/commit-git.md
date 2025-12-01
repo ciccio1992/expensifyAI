@@ -1,5 +1,18 @@
 # Commit History
 
+## Guest Mode UI Polish
+- **Date**: 2025-12-01
+- **Features**:
+  - Styled "Proceed without account" link as a full-width button to match the theme.
+- **Files**: `components/Auth.tsx`.
+
+## Guest Mode Redirects
+- **Date**: 2025-12-01
+- **Features**:
+  - Updated "Create an account" link in guest banner to open Auth screen in "Sign Up" mode.
+  - Updated "Sign In" button in header to open Auth screen in "Sign In" mode.
+- **Files**: `App.tsx`, `components/Auth.tsx`.
+
 ## Guest Mode UI Update
 - **Date**: 2025-12-01
 - **Features**:

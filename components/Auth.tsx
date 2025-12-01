@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { Mail, Lock, Loader2, LogIn, UserPlus, AlertCircle, HelpCircle } from 'lucide-react';
 
-const Auth: React.FC<{ onGuestLogin: () => void }> = ({ onGuestLogin }) => {
-  const [isLogin, setIsLogin] = useState(true);
+const Auth: React.FC<{ onGuestLogin: () => void; initialIsLogin?: boolean }> = ({ onGuestLogin, initialIsLogin = true }) => {
+  const [isLogin, setIsLogin] = useState(initialIsLogin);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -173,14 +173,14 @@ const Auth: React.FC<{ onGuestLogin: () => void }> = ({ onGuestLogin }) => {
           Sign in with Google
         </button>
 
-        <div className="mt-6 text-center">
+        <div className="mt-6">
           <button
             onClick={onGuestLogin}
-            className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 underline"
+            className="w-full py-3.5 bg-gray-100 dark:bg-gray-800 text-slate-600 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
           >
             Proceed without account
           </button>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-gray-400 text-center mt-2">
             Data stored locally. Cleared on cache reset.
           </p>
         </div>
