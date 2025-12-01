@@ -11,6 +11,7 @@ import { Moon, Sun, Loader2, WifiOff, Database, Save as SaveIcon, AlertTriangle,
 import SettingsModal from './components/SettingsModal';
 import DonationModal from './components/DonationModal';
 import FeedbackButton from './components/FeedbackButton';
+import ManualEntryModal from './components/ManualEntryModal';
 import {
   supabase,
   mapReceiptFromDB,
@@ -39,6 +40,7 @@ const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showNamePrompt, setShowNamePrompt] = useState(false);
   const [showDonationPopup, setShowDonationPopup] = useState(false);
+  const [showManualEntry, setShowManualEntry] = useState(false);
   const [exchangeRates, setExchangeRates] = useState<ExchangeRates | null>(null);
   const [authInitialLogin, setAuthInitialLogin] = useState(true);
 
@@ -394,6 +396,84 @@ const App: React.FC = () => {
       } else {
         alert("Failed to save receipt to cloud: " + (err.message || "Unknown Error"));
       }
+    } finally {
+      setUploadingState(false);
+    }
+  };
+
+  const handleManualSubmit = async (newReceipt: ReceiptData) => {
+    if (!session?.user?.id && !isGuest) return;
+
+    // 1. Apply Dynamic Conversion
+    let processedReceipt = { ...newReceipt };
+
+    if (exchangeRates) {
+      const converted = convertCurrency(
+        newReceipt.amount,
+        newReceipt.currency,
+        targetCurrency,
+        exchangeRates
+      );
+      // Calculate rate relative to target
+      const sourceRate = exchangeRates[newReceipt.currency] || 1;
+      const targetRate = exchangeRates[targetCurrency] || 1;
+      const rate = targetRate / sourceRate;
+
+      processedReceipt = {
+        ...newReceipt,
+        convertedAmount: converted,
+        exchangeRate: rate,
+        targetCurrency: targetCurrency
+      };
+    }
+
+    // 2. Optimistic UI update
+    const updatedReceipts = [processedReceipt, ...receipts];
+    setReceipts(updatedReceipts);
+    setShowManualEntry(false);
+    setSelectedReceiptId(processedReceipt.id);
+    setUploadingState(true);
+
+    if (isGuest) {
+      localStorage.setItem('guest_receipts', JSON.stringify(updatedReceipts));
+      setUploadingState(false);
+      return;
+    }
+
+    try {
+      // 3. Save to Database (No image upload needed for manual entry placeholder)
+      // We still map it to DB format. storagePath will be undefined.
+      const dbPayload = mapReceiptToDB({
+        ...processedReceipt,
+        storagePath: undefined // Explicitly undefined
+      }, session.user.id);
+
+      // Note: We need to make sure we save the placeholder base64 if we want it to persist across sessions 
+      // without storage. But mapReceiptToDB doesn't save base64 to DB usually.
+      // However, for manual entry, we might want to just rely on the client generating a placeholder 
+      // if image_path is null.
+      // But wait, `fetchReceipts` logic: if storagePath is null, it returns receipt as is.
+      // So we need to store the placeholder somewhere? 
+      // Actually, if we don't store the image in Storage, we can't retrieve it later on another device.
+      // So we SHOULD upload the placeholder image to Storage if we want it to be consistent.
+      // Let's upload the placeholder blob.
+
+      const imageBlob = base64ToBlob(processedReceipt.imageBase64);
+      const storagePath = await uploadReceiptImage(session.user.id, imageBlob);
+
+      const receiptToSave = { ...processedReceipt, storagePath: storagePath || undefined };
+      const finalDbPayload = mapReceiptToDB(receiptToSave, session.user.id);
+
+      const { error } = await supabase.from('receipts').insert([finalDbPayload]);
+
+      if (error) throw error;
+
+      // Update local state with storage path
+      setReceipts(prev => prev.map(r => r.id === processedReceipt.id ? receiptToSave : r));
+
+    } catch (err: any) {
+      console.error("Save Error:", err);
+      alert("Failed to save manual entry to cloud: " + (err.message || "Unknown Error"));
     } finally {
       setUploadingState(false);
     }
@@ -780,6 +860,7 @@ create policy "Users can manage own settings" on user_settings for all using (au
           <Dashboard
             receipts={displayReceipts}
             onAdd={() => setIsScanning(true)}
+            onAddManual={() => setShowManualEntry(true)}
             onViewAll={() => setView('list')}
             onViewMap={() => setView('map')}
             onSelectReceipt={(r) => setSelectedReceiptId(r.id)}
@@ -798,6 +879,15 @@ create policy "Users can manage own settings" on user_settings for all using (au
           />
         )}
       </main>
+
+      {/* Manual Entry Modal */}
+      {showManualEntry && (
+        <ManualEntryModal
+          onClose={() => setShowManualEntry(false)}
+          onSubmit={handleManualSubmit}
+          targetCurrency={targetCurrency}
+        />
+      )}
 
       {/* Full Screen Overlays */}
       {view === 'map' && (
