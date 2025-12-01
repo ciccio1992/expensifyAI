@@ -2,8 +2,7 @@
 
 **ExpensifyAI** is a modern, AI-powered expense tracking application designed to simplify receipt management. Built with **React**, **Vite**, **Tailwind CSS**, and **Supabase**, it leverages **Google Gemini AI** to automatically extract data from receipt images, categorize expenses, and convert currencies in real-time.
 
-![ExpensifyAI Banner](https://via.placeholder.com/1200x400?text=ExpensifyAI+Dashboard+Preview)
-*(Replace with actual screenshot of Dashboard)*
+![ExpensifyAI Banner](https://github.com/user-attachments/assets/7c4d99df-5634-45e1-8bd9-6712b799fa07)
 
 ---
 
@@ -15,8 +14,7 @@ Forget manual entry! Simply snap a photo or upload a receipt image.
 *   **Smart Categorization**: Automatically assigns categories (e.g., Food, Travel, Tech) and splits expenses into Business vs. Private.
 *   **Location Detection**: Extracts address from the receipt or uses device location to pin expenses on the map.
 
-![Scanner UI](https://via.placeholder.com/800x400?text=AI+Scanner+Interface)
-*(Replace with actual screenshot of Scanner)*
+![Scanner UI](https://github.com/user-attachments/assets/07d6e0eb-f537-4c64-b474-5e4a47e9c66e)
 
 ### 2. 📊 Smart Dashboard
 Get a clear overview of your financial health at a glance.
@@ -36,8 +34,7 @@ Visualize where you spend your money.
 *   **Global Pinning**: See all your receipts plotted on an interactive world map.
 *   **Location Context**: Click on pins to see receipt details from that specific location.
 
-![Map View](https://via.placeholder.com/800x400?text=Interactive+Map+View)
-*(Replace with actual screenshot of Map View)*
+![Map View](https://github.com/user-attachments/assets/485295cf-e651-4523-bf88-002e14485299)
 
 ### 5. 📂 Export & Reporting
 Need to submit an expense report?
@@ -60,47 +57,6 @@ Need to submit an expense report?
 *   **Backend**: Supabase (PostgreSQL, Auth, Storage)
 *   **Maps**: Leaflet / React-Leaflet
 *   **Charts**: Recharts
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-*   Node.js (v18+)
-*   NPM
-*   A Supabase Project
-*   A Google Gemini API Key
-
-### Installation
-
-1.  **Clone the repository**
-    ```bash
-    git clone https://github.com/yourusername/expensify-ai.git
-    cd expensify-ai
-    ```
-
-2.  **Install dependencies**
-    ```bash
-    npm install
-    ```
-
-3.  **Configure Environment Variables**
-    Create a `.env` file in the root directory:
-    ```env
-    VITE_GEMINI_API_KEY=your_gemini_api_key_here
-    VITE_KOFI_URL=https://ko-fi.com/yourusername
-    ```
-
-4.  **Run the Development Server**
-    ```bash
-    npm run dev
-    ```
-
-### Supabase Setup
-This app requires a Supabase backend.
-1.  Create a new project at [supabase.com](https://supabase.com).
-2.  Run the SQL script provided in the app (Settings -> Setup Backend) or copy it from `src/supabase_schema.sql` (if available) to create the necessary tables (`receipts`, `user_settings`) and storage buckets.
-3.  Connect the app by entering your **Project URL** and **Anon Key** when prompted on first launch.
 
 ---
 
