@@ -934,6 +934,16 @@ create policy "Users can manage own settings" on user_settings for all using (au
         <DonationModal onClose={() => setShowDonationPopup(false)} />
       )}
 
+      {selectedReceipt && (
+        <ReceiptDetail
+          receipt={selectedReceipt}
+          onClose={() => setSelectedReceiptId(null)}
+          onSave={handleUpdateReceipt}
+          onDelete={handleDeleteReceipt}
+          targetCurrency={targetCurrency}
+        />
+      )}
+
       <FeedbackButton />
 
     </div>

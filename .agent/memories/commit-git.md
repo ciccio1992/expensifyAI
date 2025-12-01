@@ -1,5 +1,12 @@
 # Commit History
 
+## Fix Receipt Details & Manual Entry
+- **Date**: 2025-12-01
+- **Features**:
+  - Fixed an issue where clicking on a receipt would not open the details view.
+  - Fixed the "Save Expense" flow in manual entry to correctly open the details of the newly created receipt.
+- **Files**: `App.tsx`.
+
 ## Fix Scanner Navigation
 - **Date**: 2025-12-01
 - **Features**:
