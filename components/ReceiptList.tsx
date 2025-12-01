@@ -1,7 +1,7 @@
 
 import React, { useMemo, useState } from 'react';
-import { ReceiptData, ExpenseType } from '../types';
-import { Search, ChevronLeft, BarChart3, List as ListIcon, Download } from 'lucide-react';
+import { ReceiptData, ExpenseType, ExpenseCategory } from '../types';
+import { Search, ChevronLeft, BarChart3, List as ListIcon, Download, Filter } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import ExportModal from './ExportModal';
 
@@ -20,6 +20,7 @@ const ReceiptList: React.FC<ReceiptListProps> = ({ receipts, onBack, onSelectRec
     const [showChart, setShowChart] = useState(true);
     const [timeRange, setTimeRange] = useState<TimeRange>('1W');
     const [showExportModal, setShowExportModal] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
     // 1. Prepare Chart Data based on TimeRange
     const chartData = useMemo(() => {
@@ -131,10 +132,12 @@ const ReceiptList: React.FC<ReceiptListProps> = ({ receipts, onBack, onSelectRec
 
     // 2. Prepare List Data (Group by Month Display String)
     const groupedReceipts = useMemo(() => {
-        const filtered = receipts.filter(r =>
-            r.merchantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            r.category.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        const filtered = receipts.filter(r => {
+            const matchesSearch = r.merchantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                r.category.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesCategory = selectedCategory === 'All' || r.category === selectedCategory;
+            return matchesSearch && matchesCategory;
+        });
 
         const groups: { [key: string]: ReceiptData[] } = {};
 
@@ -149,7 +152,7 @@ const ReceiptList: React.FC<ReceiptListProps> = ({ receipts, onBack, onSelectRec
         return Object.entries(groups).sort((a, b) => {
             return new Date(b[1][0].date).getTime() - new Date(a[1][0].date).getTime();
         });
-    }, [receipts, searchTerm]);
+    }, [receipts, searchTerm, selectedCategory]);
 
     return (
         <div className="h-full flex flex-col pb-6">
@@ -234,16 +237,34 @@ const ReceiptList: React.FC<ReceiptListProps> = ({ receipts, onBack, onSelectRec
                 </div>
             )}
 
-            {/* Search Bar */}
-            <div className="relative mb-6">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                <input
-                    type="text"
-                    placeholder="Search merchant or category..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-white dark:bg-card border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary outline-none dark:text-white"
-                />
+            {/* Filters & Search */}
+            <div className="flex gap-2 mb-6">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <input
+                        type="text"
+                        placeholder="Search merchant or category..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full bg-white dark:bg-card border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary outline-none dark:text-white"
+                    />
+                </div>
+                <div className="relative min-w-[140px]">
+                    <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                    <select
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        className="w-full h-full bg-white dark:bg-card border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-8 text-sm focus:ring-2 focus:ring-primary outline-none dark:text-white appearance-none cursor-pointer"
+                    >
+                        <option value="All">All Categories</option>
+                        {Object.values(ExpenseCategory).map((cat) => (
+                            <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
             </div>
 
             {/* List Section */}

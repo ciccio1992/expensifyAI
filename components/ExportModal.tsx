@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { ReceiptData } from '../types';
-import { X, Download, FileText, FileSpreadsheet, Calendar } from 'lucide-react';
+import { ReceiptData, ExpenseCategory } from '../types';
+import { X, Download, FileText, FileSpreadsheet, Calendar, Filter } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -21,26 +21,34 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, receipts, us
     });
     const [endDate, setEndDate] = useState(() => new Date().toISOString().split('T')[0]);
     const [format, setFormat] = useState<'pdf' | 'csv'>('pdf');
+    const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
     if (!isOpen) return null;
 
     const handleExport = () => {
         // Filter receipts
         let filteredReceipts = receipts.filter(r => {
-            if (!startDate && !endDate) return true;
-            const rDate = new Date(r.date);
-            const start = startDate ? new Date(startDate) : new Date('1970-01-01');
-            const end = endDate ? new Date(endDate) : new Date('2100-01-01');
-            // Set end date to end of day
-            end.setHours(23, 59, 59, 999);
-            return rDate >= start && rDate <= end;
+            // Date Filter
+            let dateMatch = true;
+            if (startDate || endDate) {
+                const rDate = new Date(r.date);
+                const start = startDate ? new Date(startDate) : new Date('1970-01-01');
+                const end = endDate ? new Date(endDate) : new Date('2100-01-01');
+                end.setHours(23, 59, 59, 999);
+                dateMatch = rDate >= start && rDate <= end;
+            }
+
+            // Category Filter
+            const categoryMatch = selectedCategory === 'All' || r.category === selectedCategory;
+
+            return dateMatch && categoryMatch;
         });
 
         // Sort Chronologically (Oldest to Newest)
         filteredReceipts.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
         if (filteredReceipts.length === 0) {
-            alert("No receipts found for the selected date range.");
+            alert("No receipts found for the selected filters.");
             return;
         }
 
@@ -69,6 +77,9 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, receipts, us
         if (startDate || endDate) {
             doc.text(`Period: ${startDate || 'Start'} to ${endDate || 'Present'}`, 14, 40);
         }
+        if (selectedCategory !== 'All') {
+            doc.text(`Category: ${selectedCategory}`, 14, 45);
+        }
 
         // Table
         const tableColumn = ["Date", "Merchant", "Category", "Type", "Amount", `Amount (${targetCurrency})`];
@@ -84,7 +95,7 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, receipts, us
         autoTable(doc, {
             head: [tableColumn],
             body: tableRows,
-            startY: 50,
+            startY: selectedCategory !== 'All' ? 55 : 50,
             theme: 'grid',
             styles: { fontSize: 8, cellPadding: 3 },
             headStyles: { fillColor: [66, 66, 66], textColor: 255 },
@@ -134,8 +145,8 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, receipts, us
 
     return (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-            <div className="bg-white dark:bg-card w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
-                <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+            <div className="bg-white dark:bg-card w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden max-h-[90vh] overflow-y-auto">
+                <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between sticky top-0 bg-white dark:bg-card z-10">
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <Download size={24} className="text-primary" />
                         Export Expenses
@@ -173,6 +184,23 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, receipts, us
                         </div>
                     </div>
 
+                    {/* Category Filter */}
+                    <div className="space-y-3">
+                        <label className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                            <Filter size={16} /> Category
+                        </label>
+                        <select
+                            value={selectedCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            className="w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-primary dark:text-white text-sm appearance-none"
+                        >
+                            <option value="All">All Categories</option>
+                            {Object.values(ExpenseCategory).map((cat) => (
+                                <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                        </select>
+                    </div>
+
                     {/* Format Selection */}
                     <div className="space-y-3">
                         <label className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Format</label>
@@ -180,8 +208,8 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, receipts, us
                             <button
                                 onClick={() => setFormat('pdf')}
                                 className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${format === 'pdf'
-                                    ? 'border-primary bg-primary/5 text-primary'
-                                    : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-500'
+                                        ? 'border-primary bg-primary/5 text-primary'
+                                        : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-500'
                                     }`}
                             >
                                 <FileText size={32} />
@@ -190,8 +218,8 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, receipts, us
                             <button
                                 onClick={() => setFormat('csv')}
                                 className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${format === 'csv'
-                                    ? 'border-primary bg-primary/5 text-primary'
-                                    : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-500'
+                                        ? 'border-primary bg-primary/5 text-primary'
+                                        : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-500'
                                     }`}
                             >
                                 <FileSpreadsheet size={32} />
@@ -201,7 +229,7 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, receipts, us
                     </div>
                 </div>
 
-                <div className="p-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50">
+                <div className="p-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 sticky bottom-0">
                     <button
                         onClick={handleExport}
                         className="w-full py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
