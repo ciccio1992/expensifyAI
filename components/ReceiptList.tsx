@@ -1,22 +1,25 @@
 
 import React, { useMemo, useState } from 'react';
 import { ReceiptData, ExpenseType } from '../types';
-import { Search, ChevronLeft, BarChart3, List as ListIcon } from 'lucide-react';
+import { Search, ChevronLeft, BarChart3, List as ListIcon, Download } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import ExportModal from './ExportModal';
 
 interface ReceiptListProps {
     receipts: ReceiptData[];
     onBack: () => void;
     onSelectReceipt: (r: ReceiptData) => void;
     targetCurrency: string;
+    userName: string;
 }
 
 type TimeRange = '1W' | '1M' | '1Y' | '5Y';
 
-const ReceiptList: React.FC<ReceiptListProps> = ({ receipts, onBack, onSelectReceipt, targetCurrency }) => {
+const ReceiptList: React.FC<ReceiptListProps> = ({ receipts, onBack, onSelectReceipt, targetCurrency, userName }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [showChart, setShowChart] = useState(true);
     const [timeRange, setTimeRange] = useState<TimeRange>('1W');
+    const [showExportModal, setShowExportModal] = useState(false);
 
     // 1. Prepare Chart Data based on TimeRange
     const chartData = useMemo(() => {
@@ -158,12 +161,21 @@ const ReceiptList: React.FC<ReceiptListProps> = ({ receipts, onBack, onSelectRec
                     </button>
                     <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Analytics</h2>
                 </div>
-                <button
-                    onClick={() => setShowChart(!showChart)}
-                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-slate-600 dark:text-gray-300 transition-colors"
-                >
-                    {showChart ? <ListIcon size={24} /> : <BarChart3 size={24} />}
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setShowExportModal(true)}
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-slate-600 dark:text-gray-300 transition-colors"
+                        title="Export Data"
+                    >
+                        <Download size={24} />
+                    </button>
+                    <button
+                        onClick={() => setShowChart(!showChart)}
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-slate-600 dark:text-gray-300 transition-colors"
+                    >
+                        {showChart ? <ListIcon size={24} /> : <BarChart3 size={24} />}
+                    </button>
+                </div>
             </div>
 
             {/* Analytics Chart Section */}
@@ -262,6 +274,14 @@ const ReceiptList: React.FC<ReceiptListProps> = ({ receipts, onBack, onSelectRec
                     ))
                 )}
             </div>
+
+            <ExportModal
+                isOpen={showExportModal}
+                onClose={() => setShowExportModal(false)}
+                receipts={receipts}
+                userName={userName}
+                targetCurrency={targetCurrency}
+            />
         </div>
     );
 };

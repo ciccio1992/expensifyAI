@@ -636,6 +636,7 @@ create policy "Users can manage own settings" on user_settings for all using (au
             onBack={() => setView('dashboard')}
             onSelectReceipt={(r) => setSelectedReceiptId(r.id)}
             targetCurrency={targetCurrency}
+            userName={userName}
           />
         )}
       </main>
