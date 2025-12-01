@@ -65,13 +65,18 @@ const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onViewAll, onVie
     <div className="space-y-6 pb-20">
 
       {/* Header */}
-      <div className="mb-2">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-          {getGreeting()}, <span className="text-primary">{userName || 'User'}</span>
-        </h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">
-          Here's your spending overview.
-        </p>
+      <div className="mb-6 flex items-center gap-4">
+        <div className="w-12 h-12 rounded-xl bg-white dark:bg-card shadow-sm border border-gray-100 dark:border-gray-800 flex items-center justify-center p-2">
+          <img src="/nanobanana.png" alt="Logo" className="w-full h-full object-contain" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            {getGreeting()}, <span className="text-primary">{userName || 'User'}</span>
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Here's your spending overview.
+          </p>
+        </div>
       </div>
 
       {/* Overview Cards */}

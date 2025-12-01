@@ -66,7 +66,7 @@ const Auth: React.FC<{ onGuestLogin: () => void; initialIsLogin?: boolean }> = (
       <div className="w-full max-w-md bg-white dark:bg-card p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800">
 
         <div className="flex flex-col items-center text-center mb-8">
-          <img src="/logo.svg" alt="ExpensifyAI Logo" className="w-12 h-12 rounded-xl shadow-lg shadow-primary/30 mb-4" />
+          <img src="/nanobanana.png" alt="ExpensifyAI Logo" className="w-12 h-12 rounded-xl shadow-lg shadow-primary/30 mb-4" />
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
             {isLogin ? 'Welcome Back' : 'Create Account'}
           </h1>

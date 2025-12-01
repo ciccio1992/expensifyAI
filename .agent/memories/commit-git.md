@@ -68,3 +68,10 @@
   - Implemented local storage persistence for guest receipts.
   - Added warning banner for guest users.
 - **Files**: `App.tsx`, `components/Auth.tsx`.
+
+## App Logo Implementation
+- **Date**: 2025-12-01
+- **Features**:
+  - Generated a new app logo (`nanobanana.png`) with a modern design.
+  - Updated favicon and app headers to use the new logo.
+- **Files**: `public/nanobanana.png`, `index.html`, `components/Auth.tsx`, `components/Dashboard.tsx`.
