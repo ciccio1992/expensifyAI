@@ -75,3 +75,11 @@
   - Generated a new app logo (`nanobanana.png`) with a modern design.
   - Updated favicon and app headers to use the new logo.
 - **Files**: `public/nanobanana.png`, `index.html`, `components/Auth.tsx`, `components/Dashboard.tsx`.
+
+## Google Login Refactor
+- **Date**: 2025-12-01
+- **Features**:
+  - Refactored Google Login to use `@react-oauth/google` for a client-side popup flow.
+  - Replaced Supabase redirect auth with `signInWithIdToken`.
+  - Added `GoogleOAuthProvider` and `GoogleLogin` to `Auth.tsx`.
+- **Files**: `components/Auth.tsx`.
