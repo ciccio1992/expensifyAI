@@ -47,3 +47,10 @@ export interface UserSettings {
   preferredCurrency: string;
   fullName?: string;
 }
+
+export interface Feedback {
+  id?: string;
+  user_id: string;
+  message: string;
+  created_at?: string;
+}

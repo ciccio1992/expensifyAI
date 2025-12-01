@@ -1,5 +1,12 @@
 # Commit History
 
+## Feedback Feature
+- **Date**: 2025-12-01
+- **Features**:
+  - Added floating feedback button and modal.
+  - Implemented feedback submission to Supabase.
+- **Files**: `App.tsx`, `components/FeedbackButton.tsx`, `components/FeedbackModal.tsx`, `services/supabaseClient.ts`, `types.ts`, `FEEDBACK_SETUP.md`.
+
 ## Guest Mode UI Polish
 - **Date**: 2025-12-01
 - **Features**:

@@ -10,6 +10,7 @@ import { ReceiptData } from './types';
 import { Moon, Sun, Loader2, WifiOff, Database, Save as SaveIcon, AlertTriangle, Copy, Terminal, LogOut, LogIn, Settings } from 'lucide-react';
 import SettingsModal from './components/SettingsModal';
 import DonationModal from './components/DonationModal';
+import FeedbackButton from './components/FeedbackButton';
 import {
   supabase,
   mapReceiptFromDB,
@@ -849,6 +850,8 @@ create policy "Users can manage own settings" on user_settings for all using (au
       {showDonationPopup && (
         <DonationModal onClose={() => setShowDonationPopup(false)} />
       )}
+
+      <FeedbackButton />
 
     </div>
   );

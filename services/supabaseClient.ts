@@ -132,3 +132,15 @@ export const mapReceiptToDB = (receipt: ReceiptData, userId: string) => ({
   latitude: receipt.latitude,
   longitude: receipt.longitude
 });
+
+export const submitFeedback = async (userId: string, message: string) => {
+  const { data, error } = await supabase
+    .from('feedback')
+    .insert([{ user_id: userId, message }]);
+
+  if (error) {
+    console.error("Error submitting feedback:", error);
+    throw error;
+  }
+  return data;
+};
