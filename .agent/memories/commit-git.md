@@ -1,5 +1,11 @@
 # Commit History
 
+## Currency Formatting Standardization
+- **Date**: 2025-12-01
+- **Files**: `services/currencyService.ts`, `components/Dashboard.tsx`, `components/ReceiptList.tsx`, `components/ReceiptDetail.tsx`, `components/ExportModal.tsx`, `components/MapView.tsx`
+- **Description**: Implemented `formatAmount` utility to standardize currency display across the app. EUR now uses comma decimals, others use dot. All displays limited to 2 decimal places.
+
+
 ## Fix Manual Entry Save Crash
 - **Date**: 2025-12-01
 - **Features**:

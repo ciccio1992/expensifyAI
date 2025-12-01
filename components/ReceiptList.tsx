@@ -1,6 +1,8 @@
 
 import React, { useMemo, useState } from 'react';
 import { ReceiptData, ExpenseType, ExpenseCategory } from '../types';
+import { formatAmount } from '../services/currencyService';
+
 import { Search, ChevronLeft, BarChart3, List as ListIcon, Download, Filter } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import ExportModal from './ExportModal';
@@ -226,7 +228,7 @@ const ReceiptList: React.FC<ReceiptListProps> = ({ receipts, onBack, onSelectRec
                                     contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
                                     itemStyle={{ color: '#fff' }}
                                     cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                                    formatter={(value: number) => `${targetCurrency} ${value.toFixed(2)}`}
+                                    formatter={(value: number) => `${targetCurrency} ${formatAmount(value, targetCurrency)}`}
                                 />
                                 <Legend wrapperStyle={{ paddingTop: '20px' }} />
                                 <Bar dataKey="Business" stackId="a" fill="#6366f1" radius={[0, 0, 4, 4]} />
@@ -287,7 +289,7 @@ const ReceiptList: React.FC<ReceiptListProps> = ({ receipts, onBack, onSelectRec
                                             <p className="text-xs text-gray-500">{receipt.date} • {receipt.category}</p>
                                         </div>
                                         <div className="text-right">
-                                            <p className="font-bold text-slate-900 dark:text-white">{targetCurrency} {receipt.convertedAmount?.toFixed(2)}</p>
+                                            <p className="font-bold text-slate-900 dark:text-white">{targetCurrency} {formatAmount(receipt.convertedAmount || 0, targetCurrency)}</p>
                                         </div>
                                     </div>
                                 ))}

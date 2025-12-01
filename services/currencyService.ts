@@ -44,3 +44,14 @@ export const convertCurrency = (
     const amountInEur = amount / sourceRate;
     return amountInEur * targetRate;
 };
+
+export const formatAmount = (amount: number, currency: string): string => {
+    // Use German locale for EUR to get comma decimals (e.g. 12.345,67)
+    // Use US locale for others (e.g. 12,345.67)
+    const locale = currency === 'EUR' ? 'de-DE' : 'en-US';
+
+    return amount.toLocaleString(locale, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+};

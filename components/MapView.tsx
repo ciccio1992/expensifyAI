@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { ReceiptData } from '../types';
+import { formatAmount } from '../services/currencyService';
+
 import { X, Calendar, Filter } from 'lucide-react';
 import * as L from 'leaflet';
 
@@ -101,7 +103,7 @@ const MapView: React.FC<MapViewProps> = ({ receipts, onClose, onSelectReceipt, t
                     <span class="text-xs font-medium px-2 py-1 rounded-full ${r.type === 'Business' ? 'bg-indigo-50 text-indigo-600' : 'bg-purple-50 text-purple-600'}">
                         ${r.type}
                     </span>
-                    <span class="font-bold text-lg text-slate-900">${targetCurrency} ${r.convertedAmount?.toFixed(2)}</span>
+                    <span class="font-bold text-lg text-slate-900">${targetCurrency} ${formatAmount(r.convertedAmount || 0, targetCurrency)}</span>
                 </div>
                 <div class="mt-2 text-center text-xs text-primary font-bold uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-opacity">
                     Click to view details

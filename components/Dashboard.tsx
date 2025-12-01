@@ -1,6 +1,8 @@
 
 import React from 'react';
 import { ReceiptData, ExpenseType } from '../types';
+import { formatAmount } from '../services/currencyService';
+
 import { Plus, ArrowRight, TrendingUp, Briefcase, User, Map } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -79,7 +81,7 @@ const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onViewAll, onVie
             <Briefcase size={64} className="text-primary" />
           </div>
           <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Business Expenses</p>
-          <h3 className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{targetCurrency} {totalBusiness.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
+          <h3 className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{targetCurrency} {formatAmount(totalBusiness, targetCurrency)}</h3>
           <div className="mt-4 h-1 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
             <div
               className="h-full bg-primary"
@@ -93,7 +95,7 @@ const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onViewAll, onVie
             <User size={64} className="text-secondary" />
           </div>
           <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Private Expenses</p>
-          <h3 className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{targetCurrency} {totalPrivate.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
+          <h3 className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{targetCurrency} {formatAmount(totalPrivate, targetCurrency)}</h3>
           <div className="mt-4 h-1 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
             <div
               className="h-full bg-secondary"
@@ -144,7 +146,7 @@ const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onViewAll, onVie
                   <Tooltip
                     contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
                     itemStyle={{ color: '#fff' }}
-                    formatter={(value: number) => `${targetCurrency} ${value.toFixed(2)}`}
+                    formatter={(value: number) => `${targetCurrency} ${formatAmount(value, targetCurrency)}`}
                   />
                   <Legend verticalAlign="bottom" height={36} iconType="circle" />
                 </PieChart>
@@ -174,7 +176,7 @@ const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onViewAll, onVie
                   <Tooltip
                     contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
                     itemStyle={{ color: '#fff' }}
-                    formatter={(value: number) => `${targetCurrency} ${value.toFixed(2)}`}
+                    formatter={(value: number) => `${targetCurrency} ${formatAmount(value, targetCurrency)}`}
                   />
                   <Legend verticalAlign="bottom" height={36} iconType="circle" />
                 </PieChart>
@@ -222,7 +224,7 @@ const Dashboard: React.FC<DashboardProps> = ({ receipts, onAdd, onViewAll, onVie
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-slate-900 dark:text-white">{targetCurrency} {receipt.convertedAmount?.toFixed(2)}</p>
+                  <p className="font-bold text-slate-900 dark:text-white">{targetCurrency} {formatAmount(receipt.convertedAmount || 0, targetCurrency)}</p>
                   {receipt.currency !== targetCurrency && (
                     <p className="text-xs text-gray-400">{receipt.currency} {receipt.amount}</p>
                   )}

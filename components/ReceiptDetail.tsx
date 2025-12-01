@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { ReceiptData, ExpenseCategory, ExpenseType } from '../types';
+import { formatAmount } from '../services/currencyService';
+
 import { X, Save, Calendar, MapPin, DollarSign, Tag, Briefcase, Percent } from 'lucide-react';
 
 interface ReceiptDetailProps {
@@ -82,7 +84,7 @@ const ReceiptDetail: React.FC<ReceiptDetailProps> = ({ receipt, onClose, onSave,
               <div>
                 <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">In {targetCurrency}</label>
                 <div className="w-full p-3 rounded-xl bg-gray-100 dark:bg-gray-900 border border-transparent font-mono text-gray-500 dark:text-gray-400">
-                  {formData.convertedAmount?.toFixed(2)}
+                  {formatAmount(formData.convertedAmount || 0, targetCurrency)}
                 </div>
               </div>
             </div>

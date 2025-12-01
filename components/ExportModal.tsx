@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { ReceiptData, ExpenseCategory } from '../types';
+import { formatAmount } from '../services/currencyService';
+
 import { X, Download, FileText, FileSpreadsheet, Calendar, Filter } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -88,8 +90,8 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, receipts, us
             r.merchantName,
             r.category,
             r.type,
-            `${r.currency} ${r.amount.toFixed(2)}`,
-            `${targetCurrency} ${r.convertedAmount?.toFixed(2) || 'N/A'}`
+            `${r.currency} ${formatAmount(r.amount, r.currency)}`,
+            `${targetCurrency} ${r.convertedAmount ? formatAmount(r.convertedAmount, targetCurrency) : 'N/A'}`
         ]);
 
         autoTable(doc, {
@@ -208,8 +210,8 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, receipts, us
                             <button
                                 onClick={() => setFormat('pdf')}
                                 className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${format === 'pdf'
-                                        ? 'border-primary bg-primary/5 text-primary'
-                                        : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-500'
+                                    ? 'border-primary bg-primary/5 text-primary'
+                                    : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-500'
                                     }`}
                             >
                                 <FileText size={32} />
@@ -218,8 +220,8 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, receipts, us
                             <button
                                 onClick={() => setFormat('csv')}
                                 className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${format === 'csv'
-                                        ? 'border-primary bg-primary/5 text-primary'
-                                        : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-500'
+                                    ? 'border-primary bg-primary/5 text-primary'
+                                    : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-500'
                                     }`}
                             >
                                 <FileSpreadsheet size={32} />
