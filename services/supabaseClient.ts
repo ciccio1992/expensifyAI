@@ -12,14 +12,7 @@ const getSupabaseConfig = () => {
     return { url: envUrl, key: envKey || '' };
   }
 
-  // 2. Check LocalStorage (for runtime configuration via UI)
-  if (typeof window !== 'undefined') {
-    const localUrl = localStorage.getItem('sb_url');
-    const localKey = localStorage.getItem('sb_key');
-    if (localUrl && localKey) {
-      return { url: localUrl, key: localKey };
-    }
-  }
+
 
   // 3. Fallback to placeholders (will cause connection error, triggering the UI setup screen)
   return {

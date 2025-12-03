@@ -7,7 +7,7 @@ import ReceiptDetail from './components/ReceiptDetail';
 import MapView from './components/MapView';
 import Auth from './components/Auth';
 import { ReceiptData } from './types';
-import { Moon, Sun, Loader2, WifiOff, Database, Save as SaveIcon, AlertTriangle, Copy, Terminal, LogOut, LogIn, Settings } from 'lucide-react';
+import { Moon, Sun, Loader2, LogOut, LogIn, Settings } from 'lucide-react';
 import SettingsModal from './components/SettingsModal';
 import DonationModal from './components/DonationModal';
 import FeedbackButton from './components/FeedbackButton';
@@ -32,9 +32,7 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
   const [isGuest, setIsGuest] = useState(false);
-  const [connectionError, setConnectionError] = useState(false);
   const [uploadingState, setUploadingState] = useState(false);
-  const [migrationNeeded, setMigrationNeeded] = useState(false);
   const [targetCurrency, setTargetCurrency] = useState('EUR');
   const [userName, setUserName] = useState<string>('');
   const [showSettings, setShowSettings] = useState(false);
@@ -44,9 +42,7 @@ const App: React.FC = () => {
   const [exchangeRates, setExchangeRates] = useState<ExchangeRates | null>(null);
   const [authInitialLogin, setAuthInitialLogin] = useState(true);
 
-  // Setup Form State
-  const [setupUrl, setSetupUrl] = useState('');
-  const [setupKey, setSetupKey] = useState('');
+
 
   // Fetch User Settings
   const fetchSettings = async (userId: string) => {
@@ -136,9 +132,7 @@ const App: React.FC = () => {
     } catch (err: any) {
       console.error("Fetch Error:", err);
       // If table doesn't exist at all, we might need migration too
-      if (err?.code === '42P01') { // undefined_table
-        setMigrationNeeded(true);
-      } else if (err?.message !== "Fetch Failed") {
+      if (err?.message !== "Fetch Failed") {
         // Only show connection error if it's not a simple empty list or auth issue
         // setConnectionError(true); 
       }
@@ -214,17 +208,13 @@ const App: React.FC = () => {
       setDarkMode(true);
     }
 
-    // Load saved settings for UI if available
-    const savedUrl = localStorage.getItem('sb_url');
-    const savedKey = localStorage.getItem('sb_key');
-    if (savedUrl) setSetupUrl(savedUrl);
-    if (savedKey) setSetupKey(savedKey);
+
 
     // Check active session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
         console.error("Session check error:", error);
-        setConnectionError(true);
+        // setConnectionError(true);
         setIsLoading(false);
       } else {
         setSession(session);
@@ -392,7 +382,7 @@ const App: React.FC = () => {
 
       // DETECT SCHEMA ERROR (Missing Column)
       if (err?.code === 'PGRST204' || (err?.message && err.message.includes('image_path'))) {
-        setMigrationNeeded(true);
+        console.error("Schema Error: Missing image_path column");
       } else {
         alert("Failed to save receipt to cloud: " + (err.message || "Unknown Error"));
       }
@@ -565,77 +555,7 @@ const App: React.FC = () => {
     setIsLoading(false);
   };
 
-  const saveConfiguration = () => {
-    if (!setupUrl || !setupKey) {
-      alert("Please enter both URL and Key.");
-      return;
-    }
-    localStorage.setItem('sb_url', setupUrl);
-    localStorage.setItem('sb_key', setupKey);
-    window.location.reload();
-  };
 
-  const copySQL = () => {
-    const sql = `-- 1. Reset Tables
-drop table if exists receipts;
-drop table if exists user_settings;
-
--- 2. Create Receipts Table
-create table receipts (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users not null,
-  merchant_name text,
-  merchant_address text,
-  date text,
-  time text,
-  amount numeric,
-  currency text,
-  vat numeric,
-  exchange_rate numeric,
-  converted_amount numeric,
-  target_currency text,
-  category text,
-  type text,
-  image_path text,
-  created_at bigint,
-  latitude float,
-  longitude float
-);
-
--- 3. Security
-alter table receipts enable row level security;
-
-create policy "Users can perform all actions on own receipts"
-on receipts for all using (auth.uid() = user_id);
-
--- 4. Storage (Run only if bucket missing)
-insert into storage.buckets (id, name, public) 
-values ('receipts', 'receipts', false) 
-on conflict do nothing;
-
-drop policy if exists "Authenticated users can upload receipts" on storage.objects;
-create policy "Authenticated users can upload receipts"
-on storage.objects for insert to authenticated
-with check ( bucket_id = 'receipts' );
-
-drop policy if exists "Users can view own receipts" on storage.objects;
-create policy "Users can view own receipts"
-on storage.objects for select to authenticated
-using ( bucket_id = 'receipts' and auth.uid() = owner );
-
--- 5. User Settings
-create table user_settings (
-  user_id uuid references auth.users not null primary key,
-  preferred_currency text default 'EUR',
-  full_name text
-);
-alter table user_settings enable row level security;
-create policy "Users can manage own settings" on user_settings for all using (auth.uid() = user_id);
-`;
-
-    navigator.clipboard.writeText(sql);
-    alert("SQL copied to clipboard!");
-  };
 
   if (isLoading) {
     return (
@@ -645,163 +565,14 @@ create policy "Users can manage own settings" on user_settings for all using (au
     );
   }
 
-  // CONNECTION ERROR SCREEN
-  if (connectionError) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-dark flex flex-col items-center justify-center p-6">
-        <div className="w-full max-w-md bg-white dark:bg-card p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800">
-          <div className="flex flex-col items-center text-center mb-6">
-            <div className="p-4 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full mb-4">
-              <Database size={32} />
-            </div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Setup Backend</h2>
-            <p className="text-gray-500 mt-2 text-sm">
-              Connect to your Supabase project to store receipts.
-            </p>
-          </div>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Project URL</label>
-              <input
-                type="text"
-                value={setupUrl}
-                onChange={(e) => setSetupUrl(e.target.value)}
-                placeholder="https://your-project.supabase.co"
-                className="w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-primary dark:text-white text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Anon Public Key</label>
-              <input
-                type="password"
-                value={setupKey}
-                onChange={(e) => setSetupKey(e.target.value)}
-                placeholder="eyJh..."
-                className="w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-primary dark:text-white text-sm"
-              />
-            </div>
-
-            <button
-              onClick={saveConfiguration}
-              className="w-full py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:opacity-90 transition-opacity flex items-center justify-center gap-2 mt-2"
-            >
-              <SaveIcon size={18} /> Connect & Reload
-            </button>
-          </div>
-
-          <p className="text-xs text-gray-400 text-center mt-6">
-            Don't have a project? Create one at <a href="https://supabase.com" target="_blank" className="text-primary underline">supabase.com</a>
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   // LOGIN SCREEN (If no session and not guest)
   if (!session && !isGuest) {
     return <Auth onGuestLogin={handleGuestLogin} initialIsLogin={authInitialLogin} />;
   }
 
-  // MIGRATION MODAL
-  if (migrationNeeded) {
-    return (
-      <div className="fixed inset-0 z-[60] bg-black/90 flex flex-col items-center justify-center p-6 animate-fade-in">
-        <div className="w-full max-w-2xl bg-gray-900 border border-gray-700 rounded-2xl p-6 shadow-2xl overflow-hidden">
-          <div className="flex items-center gap-3 text-red-500 mb-4">
-            <AlertTriangle size={32} />
-            <h2 className="text-2xl font-bold text-white">Database Repair Required</h2>
-          </div>
 
-          <p className="text-gray-300 mb-4">
-            Your Supabase database table is outdated or missing. We switched from storing raw images (Base64) to efficient file paths to save space, but your database column <code>image_path</code> is missing.
-          </p>
-
-          <div className="bg-black rounded-lg border border-gray-800 p-4 mb-6 relative group">
-            <div className="absolute top-2 right-2 flex gap-2">
-              <button onClick={copySQL} className="px-3 py-1 bg-primary text-white text-xs font-bold rounded hover:bg-primary/90 flex items-center gap-1">
-                <Copy size={12} /> Copy SQL
-              </button>
-            </div>
-            <code className="text-xs text-green-400 font-mono block overflow-x-auto whitespace-pre-wrap h-64 overflow-y-auto no-scrollbar">
-              {`-- 1. Reset Tables
-drop table if exists receipts;
-drop table if exists user_settings;
-
--- 2. Create Receipts Table
-create table receipts (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users not null,
-  merchant_name text,
-  merchant_address text,
-  date text,
-  time text,
-  amount numeric,
-  currency text,
-  vat numeric,
-  exchange_rate numeric,
-  converted_amount numeric,
-  target_currency text,
-  category text,
-  type text,
-  image_path text,
-  created_at bigint,
-  latitude float,
-  longitude float
-);
-
--- 3. Security
-alter table receipts enable row level security;
-
-create policy "Users can perform all actions on own receipts"
-on receipts for all using (auth.uid() = user_id);
-
--- 4. Storage Bucket
-insert into storage.buckets (id, name, public) 
-values ('receipts', 'receipts', false)
-on conflict do nothing;
-
-drop policy if exists "Authenticated users can upload receipts" on storage.objects;
-create policy "Authenticated users can upload receipts"
-on storage.objects for insert to authenticated
-with check ( bucket_id = 'receipts' );
-
-drop policy if exists "Users can view own receipts" on storage.objects;
-create policy "Users can view own receipts"
-on storage.objects for select to authenticated
-using ( bucket_id = 'receipts' and auth.uid() = owner );
-
--- 5. User Settings
-create table user_settings (
-  user_id uuid references auth.users not null primary key,
-  preferred_currency text default 'EUR',
-  full_name text
-);
-alter table user_settings enable row level security;
-create policy "Users can manage own settings" on user_settings for all using (auth.uid() = user_id);`}
-            </code>
-          </div>
-
-          <div className="flex gap-4">
-            <a
-              href={setupUrl || "https://supabase.com/dashboard"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 py-3 bg-gray-800 text-white font-bold rounded-xl hover:bg-gray-700 flex items-center justify-center gap-2"
-            >
-              <Terminal size={18} /> Open Supabase SQL Editor
-            </a>
-            <button
-              onClick={() => window.location.reload()}
-              className="flex-1 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:opacity-90 flex items-center justify-center gap-2"
-            >
-              I Ran The SQL, Reload App
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen font-sans bg-gray-50 dark:bg-dark transition-colors duration-300">

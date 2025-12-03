@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { supabase } from '../services/supabaseClient';
-import { Mail, Lock, Loader2, LogIn, UserPlus, AlertCircle, HelpCircle } from 'lucide-react';
+import { Mail, Lock, Loader2, LogIn, UserPlus, AlertCircle } from 'lucide-react';
 import { GoogleOAuthProvider, GoogleLogin, CredentialResponse } from '@react-oauth/google';
 
 const Auth: React.FC<{ onGuestLogin: () => void; initialIsLogin?: boolean }> = ({ onGuestLogin, initialIsLogin = true }) => {
@@ -87,20 +87,7 @@ const Auth: React.FC<{ onGuestLogin: () => void; initialIsLogin?: boolean }> = (
                 <p className="break-words">{error}</p>
               </div>
 
-              {/* Contextual Help for Google Errors */}
-              {error.includes('google') || error.includes('403') ? (
-                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl text-xs text-blue-800 dark:text-blue-200">
-                  <div className="flex items-center gap-2 font-bold mb-2">
-                    <HelpCircle size={14} />
-                    <span>Google Login Troubleshooting</span>
-                  </div>
-                  <ul className="list-disc pl-4 space-y-1 opacity-90">
-                    <li>Go to <strong>Google Cloud Console &gt; Credentials</strong>.</li>
-                    <li>Check "Authorized JavaScript origins". It <strong>must</strong> match exactly: <br /> <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">{window.location.origin}</code></li>
-                    <li>Ensure <code>VITE_GOOGLE_CLIENT_ID</code> is set in your .env file.</li>
-                  </ul>
-                </div>
-              ) : null}
+
             </div>
           )}
 
