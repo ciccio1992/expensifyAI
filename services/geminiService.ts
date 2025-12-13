@@ -47,7 +47,7 @@ export const analyzeReceiptImage = async (base64Image: string, targetCurrency: s
 
   try {
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-1.5-flash-latest",
       generationConfig: {
         responseMimeType: "application/json",
         responseSchema: getReceiptSchema(targetCurrency),
