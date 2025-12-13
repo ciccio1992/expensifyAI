@@ -1,5 +1,12 @@
 # Commit History
 
+## Remove Email/Password Login
+- **Date**: 2025-12-13
+- **Features**:
+  - Removed Email/Password login form and related state from `Auth.tsx`.
+  - Retained only Google OAuth and Guest Login to comply with Supabase policies and prevent phishing warnings.
+- **Files**: `components/Auth.tsx`.
+
 ## Currency Formatting Standardization
 - **Date**: 2025-12-01
 - **Files**: `services/currencyService.ts`, `components/Dashboard.tsx`, `components/ReceiptList.tsx`, `components/ReceiptDetail.tsx`, `components/ExportModal.tsx`, `components/MapView.tsx`

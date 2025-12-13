@@ -1,6 +1,6 @@
-# ExpensifyAI 🚀
+# TallyLens 🚀
 
-**ExpensifyAI** is a modern, AI-powered expense tracking application designed to simplify receipt management. Built with **React**, **Vite**, **Tailwind CSS**, and **Supabase**, it leverages **Google Gemini AI** to automatically extract data from receipt images, categorize expenses, and convert currencies in real-time.
+**TallyLens** is a modern, AI-powered expense tracking application designed to simplify receipt management. Built with **React**, **Vite**, **Tailwind CSS**, and **Supabase**, it leverages **Google Gemini AI** to automatically extract data from receipt images, categorize expenses, and convert currencies in real-time.
 
 ![ExpensifyAI Banner](https://github.com/user-attachments/assets/7c4d99df-5634-45e1-8bd9-6712b799fa07)
 

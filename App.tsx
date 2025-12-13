@@ -588,7 +588,7 @@ const App: React.FC = () => {
       <header className={`fixed left-0 right-0 h-16 bg-white/80 dark:bg-card/80 backdrop-blur-md z-30 border-b border-gray-200 dark:border-gray-800 px-4 flex items-center justify-between ${isGuest ? 'top-8' : 'top-0'}`}>
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('dashboard')}>
           <img src="/logo.svg" alt="ExpensifyAI Logo" className="w-8 h-8 rounded-lg shadow-sm" />
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">ExpensifyAI</h1>
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">TallyLens</h1>
         </div>
         <div className="flex items-center gap-2">
           {uploadingState && <Loader2 className="animate-spin text-primary" size={20} />}
