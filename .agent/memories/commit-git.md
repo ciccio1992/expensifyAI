@@ -1,5 +1,10 @@
 # Commit History
 
+## Fix Gemini Quota Error
+- **Date**: 2025-12-13
+- **Description**: Downgraded Gemini model from `gemini-2.0-flash` to `gemini-1.5-flash` to resolve 429 quota exceeded errors.
+- **Files**: `services/geminiService.ts`.
+
 ## Remove Email/Password Login
 - **Date**: 2025-12-13
 - **Features**:
